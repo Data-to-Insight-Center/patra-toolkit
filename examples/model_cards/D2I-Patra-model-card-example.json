@@ -1,0 +1,187 @@
+{
+    "name": "UCI Adult Data Analysis model using Tensorflow",
+    "version": "0.1",
+    "short_description": "UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
+    "full_description": "We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
+    "keywords": "uci adult, tensorflow, explainability, fairness, patra",
+    "author": "Robert Martin",
+    "input_type": "Tabular",
+    "category": "Classification",
+    "input_data": "https://archive.ics.uci.edu/dataset/2/adult",
+    "output_data": "https://github.iu.edu/d2i/dockerhub/tensorflow/adult_modelv01",
+    "ai_model": {
+        "name": "Income prediction tensorflow model",
+        "version": "1.0",
+        "description": "Census classification problem using Tensorflow Neural Network using the UCI Adult Dataset",
+        "owner": "Robert Martin",
+        "location": "https://github.iu.edu/d2i/uci_adult/tensorflow_model",
+        "license": "BSD-3 Clause",
+        "framework": "tensorflow",
+        "model_type": "dnn",
+        "test_accuracy": 0.7980961203575134,
+        "foundational_model": "None",
+        "model_structure": {
+            "class_name": "Sequential",
+            "config": {
+                "name": "sequential_2",
+                "layers": [
+                    {
+                        "module": "keras.layers",
+                        "class_name": "InputLayer",
+                        "config": {
+                            "batch_input_shape": [
+                                100
+                            ],
+                            "dtype": "float32",
+                            "name": "input_3"
+                        }
+                    },
+                    {
+                        "module": "keras.layers",
+                        "class_name": "Dense",
+                        "config": {
+                            "name": "dense_7",
+                            "trainable": true,
+                            "dtype": "float32",
+                            "units": 64,
+                            "activation": "relu",
+                            "use_bias": true,
+                            "kernel_initializer": {
+                                "module": "keras.initializers",
+                                "class_name": "GlorotUniform"
+                            },
+                            "bias_initializer": {
+                                "module": "keras.initializers",
+                                "class_name": "Zeros"
+                            }
+                        },
+                        "build_config": {
+                            "input_shape": [
+                                100
+                            ]
+                        }
+                    },
+                    {
+                        "module": "keras.layers",
+                        "class_name": "Dense",
+                        "config": {
+                            "name": "dense_8",
+                            "trainable": true,
+                            "dtype": "float32",
+                            "units": 128,
+                            "activation": "relu",
+                            "use_bias": true,
+                            "kernel_initializer": {
+                                "module": "keras.initializers",
+                                "class_name": "GlorotUniform"
+                            },
+                            "bias_initializer": {
+                                "module": "keras.initializers",
+                                "class_name": "Zeros"
+                            }
+                        },
+                        "build_config": {
+                            "input_shape": [
+                                64
+                            ]
+                        }
+                    },
+                    {
+                        "module": "keras.layers",
+                        "class_name": "Dense",
+                        "config": {
+                            "name": "dense_9",
+                            "trainable": true,
+                            "dtype": "float32",
+                            "units": 64,
+                            "activation": "relu",
+                            "use_bias": true,
+                            "kernel_initializer": {
+                                "module": "keras.initializers",
+                                "class_name": "GlorotUniform"
+                            },
+                            "bias_initializer": {
+                                "module": "keras.initializers",
+                                "class_name": "Zeros"
+                            }
+                        },
+                        "build_config": {
+                            "input_shape": [
+                                128
+                            ]
+                        }
+                    },
+                    {
+                        "module": "keras.layers",
+                        "class_name": "Dense",
+                        "config": {
+                            "name": "dense_10",
+                            "trainable": true,
+                            "dtype": "float32",
+                            "units": 1,
+                            "activation": "sigmoid",
+                            "use_bias": true,
+                            "kernel_initializer": {
+                                "module": "keras.initializers",
+                                "class_name": "GlorotUniform"
+                            },
+                            "bias_initializer": {
+                                "module": "keras.initializers",
+                                "class_name": "Zeros"
+                            }
+                        },
+                        "build_config": {
+                            "input_shape": [
+                                64
+                            ]
+                        }
+                    }
+                ]
+            },
+            "keras_version": "2.15.0",
+            "backend": "tensorflow"
+        },
+        "metrics": [
+            {
+                "key": "Test loss",
+                "value": 0.49563485383987427
+            },
+            {
+                "key": "Epochs",
+                "value": 100
+            },
+            {
+                "key": "Batch Size",
+                "value": 32
+            },
+            {
+                "key": "Optimizer",
+                "value": "Adam"
+            },
+            {
+                "key": "Learning Rate",
+                "value": 0.0001
+            },
+            {
+                "key": "Input Shape",
+                "value": "(26048, 100)"
+            }
+        ]
+    },
+    "bias_analysis": {
+        "demographic_parity_diff": 0.04268373096686717,
+        "equal_odds_difference": 0.04169312983955298
+    },
+    "xai_analysis": {
+        "capital-gain": 0.04943593070968624,
+        "fnlwgt": 0.007977424863480671,
+        "capital-loss": 0.0016644893624441271,
+        "age": 2.839242701838145e-05,
+        "martial-status_ Married-civ-spouse": 1.6070720708102193e-05,
+        "relationship_ Not-in-family": 1.3571421730930955e-05,
+        "martial-status_ Never-married": 1.1598601625075779e-05,
+        "education-num": 1.0616391369266047e-05,
+        "hours-per-week": 9.01362025913249e-06,
+        "occupation_ Exec-managerial": 8.548350777930122e-06
+    }
+}

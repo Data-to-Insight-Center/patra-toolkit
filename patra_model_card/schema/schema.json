@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ICICLE Model Card",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the Model Card"
+    },
+    "version": {
+      "type": "string",
+      "description": "The version of the Model Card"
+    },
+    "short_description": {
+      "type": "string",
+      "description": "A brief description of the Model Card"
+    },
+    "full_description": {
+      "type": "string",
+      "description": "A comprehensive description of the Model Card"
+    },
+    "keywords": {
+      "type": "string",
+      "description": "Keywords for the model card"
+    },
+    "author": {
+      "type": "string",
+      "description": "The author or creator of the Model Card"
+    },
+    "input_type": {
+      "type": "string",
+      "description": "Type of the input data"
+    },
+    "input_data": {
+      "type": "string",
+      "description": "The ID of the Datasheet"
+    },
+    "input_type": {
+      "type": "string",
+      "description": "Type of the input data"
+    },
+    "output_data": {
+      "type": "string",
+      "description": "The ID of the output if any"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "classification",
+        "regression",
+        "clustering",
+        "other"
+      ]
+    },
+    "documentation": {
+      "type": "string",
+      "description": "URL for documentation if available"
+    },
+    "ai_model": {
+      "description": "Description of the AI Model",
+      "type": [
+        "object"
+      ],
+      "properties": {
+        "name": {
+          "description": "The name of the model.",
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "description": "The version of the Model"
+        },
+        "description": {
+          "description": "Description of the AI Model.",
+          "type": "string"
+        },
+        "owner": {
+          "type": "string",
+          "description": "The owner of the Model"
+        },
+        "location": {
+          "description": "Downloadable URL of the model",
+          "type": "string"
+        },
+        "license": {
+          "description": "Licence the model",
+          "type": "string"
+        },
+        "foundational_model": {
+          "description": "If a foundational model has been used, provide the model ID",
+          "type": "string"
+        },
+        "model_structure": {
+          "description": "Structure of the model",
+          "type": "string"
+        },
+        "framework": {
+          "type": "string",
+          "enum": [
+            "sklearn",
+            "tensorflow",
+            "pytorch",
+            "other"
+          ]
+        },
+        "model_type": {
+          "type": "string",
+          "enum": [
+            "cnn",
+            "decision_tree",
+            "dnn",
+            "rnn",
+            "svm",
+            "kmeans",
+            "llm",
+            "random_forest",
+            "lstm",
+            "other"
+          ]
+        },
+        "test_accuracy": {
+          "description": "Accuracy of the model for the test data",
+          "type": "number"
+        },
+        "model_metrics": {
+          "description": "Metrics of the AI Model",
+          "type": "array",
+          "items": {
+            "$ref": "#/fields/metrics"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "description",
+        "owner",
+        "location",
+        "license",
+        "framework",
+        "test_accuracy",
+        "model_type",
+        "input_type"
+      ]
+    },
+    "bias_analysis": {
+      "type": "object",
+      "properties": {
+        "demographic_parity_difference": {
+          "type": "number"
+        },
+        "equal_odds_difference": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "demographic_parity_difference",
+        "equal_odds_difference"
+      ]
+    },
+    "xai_analysis": {
+      "description": "Explainability analysis of the Model Card.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "bias_metrics": {
+          "description": "Metrics of the bias scanner",
+          "type": "array",
+          "items": {
+            "$ref": "#/fields/metrics"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "version",
+    "short_description",
+    "full_description",
+    "author",
+    "keywords",
+    "input_data",
+    "input_type",
+    "output_data",
+    "ai_model",
+    "bias_analysis"
+  ],
+  "fields": {
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "description": "Name of the metric",
+          "type": "string"
+        },
+        "value": {
+          "description": "The value of the performance metric.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
