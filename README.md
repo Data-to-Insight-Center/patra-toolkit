@@ -1,14 +1,14 @@
-# ICICLE Model Card library
+# Patra Model Card toolkit
 
 ### Installation
 In your colab notebook run the following command to install the Model Card
 ```shell
-!pip install 'git+https://github.com/swsachith/icicle_model_card.git'
+!pip install 'git+https://github.com/Data-to-Insight-Center/patra-toolkit.git'
 ```
 
 For developer run the following instead to install locally:
 ```shell
-pip install -e <local_git_dir>/icicle_model_card
+pip install -e <local_git_dir>/patra_model_card
 ```
 
 ### How to use the library
@@ -18,7 +18,7 @@ Examples are available in the examples/notebook directory.
 
 1. Import the Model Card
 ```python
-from icicle_model_card.icicle_model_card import ModelCard, AIModel
+from patra_model_card.patra_model_card import ModelCard, AIModel
 ```
 
 2. Initialize the Model Card
@@ -117,6 +117,6 @@ print(mc)
 
 Save the model card to a given file path. 
 ```python
-from icicle_model_card.icicle_model_card import save_mc
+from patra_model_card.patra_model_card import save_mc
 save_mc(mc, <file_path>)
 ```
