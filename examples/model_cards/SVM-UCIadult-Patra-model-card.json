@@ -1,0 +1,47 @@
+{
+    "name": "UCI Adult Data Analysis via Support Vector Machine",
+    "version": "0.1",
+    "short_description": "UCI Adult Data analysis using SVC",
+    "full_description": "Using a Support Vector Machine to train on UCI Adult Data Analysis",
+    "keywords": "uci adult, sklearn, svm, explainability, fairness, fairlearn, shap",
+    "author": "Sachith Withana",
+    "input_type": "Tabular",
+    "category": "Classification",
+    "input_data": "https://archive.ics.uci.edu/dataset/2/adult",
+    "output_data": "https://github.iu.edu/d2i/dockerhub/svm/adult_modelv01",
+    "ai_model": {
+        "name": "UCI Adult tensorflow model",
+        "version": "0.1",
+        "description": "Census classification problem using support vector machine",
+        "owner": "Sachith Withana",
+        "location": "https://github.iu.edu/swithana/mcwork/svm/adult_model.pkl",
+        "license": "BSD-3 Clause",
+        "framework": "sklearn",
+        "model_type": "svm",
+        "test_accuracy": 0.7957930293259634,
+        "foundational_model": "",
+        "model_structure": "",
+        "metrics": [
+            {
+                "key": "Test loss",
+                "value": 0.8
+            }
+        ]
+    },
+    "bias_analysis": {
+        "demographic_parity_diff": 0.03371427297061939,
+        "equal_odds_difference": 0.021853769318116195
+    },
+    "xai_analysis": {
+        "capital-gain": 0.09539999999999989,
+        "fnlwgt": 0.012399999999999998,
+        "age": 0.0,
+        "workclass": 0.0,
+        "education": 0.0,
+        "education-num": 0.0,
+        "marital-status": 0.0,
+        "occupation": 0.0,
+        "relationship": 0.0,
+        "race": 0.0
+    }
+}
