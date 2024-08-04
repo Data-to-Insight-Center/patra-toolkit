@@ -18,7 +18,7 @@
         "license": "BSD-3 Clause",
         "framework": "tensorflow",
         "model_type": "dnn",
-        "test_accuracy": 0.776140034198761,
+        "test_accuracy": 0.7635498046875,
         "foundational_model": "None",
         "model_structure": {
             "module": "keras",
@@ -200,7 +200,7 @@
             }
         },
         "metrics": {
-            "Test loss": 0.5264031887054443,
+            "Test loss": 0.5456678867340088,
             "Epochs": 100,
             "Batch Size": 32,
             "Optimizer": "Adam",
@@ -209,20 +209,20 @@
         }
     },
     "bias_analysis": {
-        "demographic_parity_diff": 0.016893322677259265,
-        "equal_odds_difference": 0.015399962791175094
+        "demographic_parity_diff": 0.004273079982098825,
+        "equal_odds_difference": 0.0030119902230604893
     },
     "xai_analysis": {
-        "capital-gain": 0.08574622329324483,
-        "fnlwgt": 0.00804802388780647,
-        "age": 0.0001878592330548499,
-        "occupation_ Exec-managerial": 5.9379508925811665e-05,
-        "martial-status_ Married-civ-spouse": 3.860872652795555e-05,
-        "relationship_ Not-in-family": 3.367731968561703e-05,
-        "hours-per-week": 2.597770757145361e-05,
-        "education_ HS-grad": 2.5964784953329577e-05,
-        "martial-status_ Never-married": 1.6633578472667918e-05,
-        "workclass_ Private": 1.529919190539499e-05
+        "workclass__Self_emp_not_inc": 1.1589792042743241e-10,
+        "race__White": 1.1589792042743241e-10,
+        "education__Bachelors": 1.07619497572801e-10,
+        "education__HS_grad": 1.0761949749570219e-10,
+        "race__Black": 9.934107510366372e-11,
+        "education_num": 9.93410746410708e-11,
+        "workclass__Private": 9.934107456397199e-11,
+        "workclass__State_gov": 8.278422900890685e-11,
+        "sex__Male": 8.278422893180802e-11,
+        "martial_status__Married_civ_spouse": 8.278422893180802e-11
     },
     "model_requirements": [
         "absl-py==2.1.0",

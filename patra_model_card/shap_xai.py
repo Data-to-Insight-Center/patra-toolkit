@@ -1,5 +1,6 @@
 import shap
 import pandas as pd
+import re
 
 class ExplainabilityAnalyser:
     """
@@ -23,6 +24,6 @@ class ExplainabilityAnalyser:
 
         result_dict = {}
         for name, importance in top_features.items():
-            result_dict[name] = float(importance)
-
+            filtered_name = re.sub(r'[^a-zA-Z0-9]', '_', name)
+            result_dict[filtered_name] = float(importance)
         return result_dict
