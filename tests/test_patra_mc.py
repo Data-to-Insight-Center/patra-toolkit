@@ -1,11 +1,10 @@
 from patra_model_card.patra_model_card import *
 import json
 import unittest
-
 from jsonschema import validate
 import os.path
 
-SCHEMA_JSON = os.path.join(os.path.dirname(__file__), '../icicle_model_card/schema', 'schema.json')
+SCHEMA_JSON = os.path.join(os.path.dirname(__file__), '../patra_model_card/schema', 'schema.json')
 
 
 class ModelCardTestCase(unittest.TestCase):

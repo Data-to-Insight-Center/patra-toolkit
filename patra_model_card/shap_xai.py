@@ -24,6 +24,7 @@ class ExplainabilityAnalyser:
 
         result_dict = {}
         for name, importance in top_features.items():
+            # removing special characters to support the knowledge graph keys.
             filtered_name = re.sub(r'[^a-zA-Z0-9]', '_', name)
             result_dict[filtered_name] = float(importance)
         return result_dict

@@ -28,6 +28,4 @@ class BiasAnalyzer:
         # true_negative_rate = tn / (tn + fp)
 
         return {"demographic_parity_diff": demographic_parity,
-                "equal_odds_difference": equal_odds_diff
-                }
-
+                "equal_odds_difference": equal_odds_diff}

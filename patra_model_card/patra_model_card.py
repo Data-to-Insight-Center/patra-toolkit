@@ -163,6 +163,10 @@ class ModelCard:
             return False
 
     def submit(self, patra_server_url):
+        """
+        Validates and submits the model card to the Patra Server.
+        :param patra_server_url:
+        """
         if self.validate():
             try:
                 headers = {'Content-Type': 'application/json'}  # Set the content type to JSON
@@ -183,6 +187,9 @@ class ModelCard:
 
 
 class ModelCardJSONEncoder(JSONEncoder):
+    """
+    JSON encoder for the model card.
+    """
     def default(self, obj):
         if isinstance(obj, (ModelCard, Metric, AIModel, ExplainabilityAnalysis, BiasAnalysis)):
             return obj.__dict__
