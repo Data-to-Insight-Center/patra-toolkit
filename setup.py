@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='patra_model_card',
-    version='0.2',
+    version='0.3',
     packages=['tests', 'patra_model_card'],
     package_data={'patra_model_card': ['schema/schema.json']},
     include_package_data=True,
@@ -20,5 +20,6 @@ setup(
         'pandas~=2.2.2'
         'numpy~=1.26.4'
         'pyrsistent~=0.19.3'
+        'requests~=2.32.3'
     ]
 )
