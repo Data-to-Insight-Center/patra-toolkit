@@ -65,7 +65,6 @@ class ModelCardTestCase(unittest.TestCase):
         """
         # Convert the dataclass object to JSON string using the custom encoder
         mc_json = json.dumps(self.mc, cls=ModelCardJSONEncoder, indent=4)
-        print(mc_json)
         with open('../patra_model_card/schema/schema.json', 'r') as schema_file:
             schema = json.load(schema_file)
         try:
@@ -78,7 +77,7 @@ class ModelCardTestCase(unittest.TestCase):
         This tests the validate function.
         :return:
         """
-        is_valid = validate_mc(model_card=self.mc)
+        is_valid = self.mc.validate()
         self.assertTrue(is_valid)
 
     def test_framework_enum(self):
@@ -115,7 +114,7 @@ class ModelCardTestCase(unittest.TestCase):
         mc.ai_model = aimodel
         mc.bias_analysis = bias_analysis
 
-        is_valid = validate_mc(model_card=mc)
+        is_valid = mc.validate()
         self.assertFalse(is_valid)
 
     def test_json_conversion(self):
@@ -137,7 +136,7 @@ class ModelCardTestCase(unittest.TestCase):
         This tests if the MC save as json works
         :return:
         """
-        save_mc(self.mc, self.mc_save_location)
+        self.mc.save(self.mc_save_location)
 
         # file existing verification
         self.assertTrue(os.path.exists(self.mc_save_location), "File not found")

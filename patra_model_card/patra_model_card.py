@@ -31,7 +31,7 @@ class AIModel:
     model_type: str
     test_accuracy: float
     foundational_model: Optional[str] = ""
-    model_structure: Optional[str] = ""
+    model_structure: Optional[object] = field(default_factory=dict)
     metrics: Dict[str, str] = field(default_factory=dict)
 
     def add_metric(self, key: str, value: str) -> None:
