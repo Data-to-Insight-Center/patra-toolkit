@@ -12,7 +12,7 @@ pip install -e <local_git_dir>/patra_model_card
 ```
 
 ### How to use the library
-Examples are available in the examples/notebook directory. 
+Please refer to the tensorflow_adult_nn notebook for an example on how you can use this toolkit. 
 
 ##### Adding the model metadata
 
@@ -76,8 +76,12 @@ Types of model types provided:
 
 You can also add custom metrics: 
 ```python
-model_metrics = [Metric("Test loss", 0.7)]
-ai_model.metrics = model_metrics
+ai_model.add_metric("Test loss", loss)
+ai_model.add_metric("Epochs", 100)
+ai_model.add_metric("Batch Size", 32)
+ai_model.add_metric("Optimizer", "Adam")
+ai_model.add_metric("Learning Rate", 0.0001)
+ai_model.add_metric("Input Shape", "(26048, 100)")
 ```
 
 ##### Running fairness scanners

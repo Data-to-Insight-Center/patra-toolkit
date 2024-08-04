@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Dict
 from dataclasses import dataclass
 import json
 from json import JSONEncoder
@@ -31,8 +31,10 @@ class AIModel:
     test_accuracy: float
     foundational_model: Optional[str] = ""
     model_structure: Optional[str] = ""
-    metrics: List[Metric] = field(default_factory=list)
+    metrics: Dict[str, str] = field(default_factory=dict)
 
+    def add_metric(self, key: str, value: str) -> None:
+        self.metrics[key] = value
 
 @dataclass
 class BiasAnalysis:

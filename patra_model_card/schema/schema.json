@@ -88,7 +88,7 @@
         },
         "model_structure": {
           "description": "Structure of the model",
-          "type": "string"
+          "type": "object"
         },
         "framework": {
           "type": "string",
@@ -141,17 +141,13 @@
     "bias_analysis": {
       "type": "object",
       "properties": {
-        "demographic_parity_difference": {
+        "demographic_parity_diff": {
           "type": "number"
         },
         "equal_odds_difference": {
           "type": "number"
         }
-      },
-      "required": [
-        "demographic_parity_difference",
-        "equal_odds_difference"
-      ]
+      }
     },
     "xai_analysis": {
       "description": "Explainability analysis of the Model Card.",
