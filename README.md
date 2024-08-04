@@ -129,3 +129,11 @@ Save the model card to a given file path.
 mc.save(<file_path>)
 ```
 
+##### Save python package requirements 
+You can optionally capture the python package requirements and it's versions into the model card using the following function
+
+```python
+mc.populate_requirements()
+```
+
+
