@@ -64,6 +64,7 @@ class ModelCard:
     ai_model: Optional[AIModel] = None
     bias_analysis: Optional[BiasAnalysis] = None
     xai_analysis: Optional[ExplainabilityAnalysis] = None
+    model_requirements: Optional[List] = None
 
     def __str__(self):
         """
@@ -100,7 +101,7 @@ class ModelCard:
         xai_analyzer = ExplainabilityAnalyser(train_dataset, column_names, model)
         self.xai_analysis = xai_analyzer.calculate_xai_features(n_features)
 
-    def get_requirements(self):
+    def populate_requirements(self):
         """
         gets all the package requirements for this model.
         :return:
@@ -114,7 +115,7 @@ class ModelCard:
 
         # all packages except Patra packages
         filtered_packages_list = [pkg for pkg in packages_list if pkg.split("==")[0] not in exclude_packages]
-        return filtered_packages_list
+        self.model_requirements = filtered_packages_list
 
     def validate(self):
         """
@@ -138,7 +139,7 @@ class ModelCard:
         Saves the model card as a json file.
         """
         with open(file_location, 'w') as json_file:
-            json.dump(self.__str__(), json_file, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
+            json_file.write(str(self))
 
 
 class ModelCardJSONEncoder(JSONEncoder):
