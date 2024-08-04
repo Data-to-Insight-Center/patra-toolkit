@@ -111,6 +111,11 @@ The following shows an example usage for fairness information population.
 mc.populate_xai(X_test, x_columns, model, 10)
 ```
 
+##### Validating the model card
+This validates the content of the model card against the Patra Model Card schema.
+```python
+mc.validate()
+```
 
 
 ##### Saving the model card
@@ -121,6 +126,6 @@ print(mc)
 
 Save the model card to a given file path. 
 ```python
-from patra_model_card.patra_model_card import save_mc
-save_mc(mc, <file_path>)
+mc.save(<file_path>)
 ```
+

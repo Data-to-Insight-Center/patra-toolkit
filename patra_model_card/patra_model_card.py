@@ -72,41 +72,56 @@ class ModelCard:
         return json.dumps(self.__dict__, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
 
     def populate_bias(self, dataset, true_labels, predicted_labels, sensitive_feature_name, sensitive_feature_data, model):
+        """
+        Calculates the fairness metrics and adds it to the model card.
+        :param dataset:
+        :param true_labels:
+        :param predicted_labels:
+        :param sensitive_feature_name:
+        :param sensitive_feature_data:
+        :param model:
+        :return:
+        """
         bias_analyzer = BiasAnalyzer(dataset, true_labels, predicted_labels, sensitive_feature_name,
                                           sensitive_feature_data, model)
 
         self.bias_analysis = bias_analyzer.calculate_bias_metrics()
 
     def populate_xai(self, train_dataset, column_names, model, n_features=10):
+        """
+        Calculates the top n_features in terms of feature importance and add's it to the model card.
+        :param train_dataset:
+        :param column_names:
+        :param model:
+        :param n_features:
+        :return:
+        """
         xai_analyzer = ExplainabilityAnalyser(train_dataset, column_names, model)
         self.xai_analysis = xai_analyzer.calculate_xai_features(n_features)
 
+    def validate(self):
+        """
+        Validates the current model against the Model Card schema
+        :return:
+        """
+        # Convert the dataclass object to JSON string using the custom encoder
+        mc_json = self.__str__()
 
-def validate_mc(model_card):
-    """
-    Validates the current model against the Model Card schema
-    :return:
-    """
-    # Convert the dataclass object to JSON string using the custom encoder
-    mc_json = json.dumps(model_card, cls=ModelCardJSONEncoder, indent=4)
+        try:
+            with open(SCHEMA_JSON, 'r') as schema_file:
+                schema = json.load(schema_file)
+            validate(json.loads(mc_json), schema)
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
-    try:
-        with open(SCHEMA_JSON, 'r') as schema_file:
-            schema = json.load(schema_file)
-
-        validate(json.loads(mc_json), schema)
-        return True
-    except Exception as e:
-        print(e)
-        return False
-
-
-def save_mc(model_card, file_location):
-    """
-    Saves the model card as a json file.
-    """
-    with open(file_location, 'w') as json_file:
-        json.dump(model_card, json_file, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
+    def save(self, file_location):
+        """
+        Saves the model card as a json file.
+        """
+        with open(file_location, 'w') as json_file:
+            json.dump(self.__str__(), json_file, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
 
 
 class ModelCardJSONEncoder(JSONEncoder):
