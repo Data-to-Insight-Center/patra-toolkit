@@ -7,6 +7,7 @@ from jsonschema import validate
 import os.path
 from patra_model_card.fairlearn_bias import BiasAnalyzer
 from patra_model_card.shap_xai import ExplainabilityAnalyser
+import pkg_resources
 
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
@@ -98,6 +99,22 @@ class ModelCard:
         """
         xai_analyzer = ExplainabilityAnalyser(train_dataset, column_names, model)
         self.xai_analysis = xai_analyzer.calculate_xai_features(n_features)
+
+    def get_requirements(self):
+        """
+        gets all the package requirements for this model.
+        :return:
+        """
+        # Patra related packages. Remove this from the requirement list.
+        exclude_packages = {"shap", "fairlearn"}
+
+        # Get all the installed packages
+        installed_packages = pkg_resources.working_set
+        packages_list = sorted(["%s==%s" % (i.key, i.version) for i in installed_packages])
+
+        # all packages except Patra packages
+        filtered_packages_list = [pkg for pkg in packages_list if pkg.split("==")[0] not in exclude_packages]
+        return filtered_packages_list
 
     def validate(self):
         """
