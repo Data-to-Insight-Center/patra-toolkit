@@ -15,11 +15,11 @@ setup(
         'attrs~=23.1.0',
         'jsonschema~=4.18.6',
         'fairlearn~=0.9.0',
-        'scikit-learn~=1.3.1'
-        'shap~=0.45.1'
-        'pandas~=2.2.2'
-        'numpy~=1.26.4'
-        'pyrsistent~=0.19.3'
+        'scikit-learn~=1.3.1',
+        'shap~=0.45.1',
+        'pandas~=2.2.2',
+        'numpy~=1.26.4',
+        'pyrsistent~=0.19.3',
         'requests~=2.32.3'
     ]
 )
