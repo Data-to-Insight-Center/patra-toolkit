@@ -6,3 +6,4 @@ pandas~=2.2.2
 fairlearn~=0.10.0
 scikit-learn~=1.5.0
 numpy~=1.26.4
+requests~=2.32.3
