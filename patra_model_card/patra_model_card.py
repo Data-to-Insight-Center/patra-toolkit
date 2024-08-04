@@ -8,7 +8,7 @@ import os.path
 from patra_model_card.fairlearn_bias import BiasAnalyzer
 from patra_model_card.shap_xai import ExplainabilityAnalyser
 import pkg_resources
-
+import requests
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 
@@ -133,6 +133,18 @@ class ModelCard:
         except Exception as e:
             print(e)
             return False
+
+    def submit(self, patra_server_url):
+        if self.validate():
+            try:
+                headers = {'Content-Type': 'application/json'}  # Set the content type to JSON
+                response = requests.post(patra_server_url, json=json.loads(str(self)), headers=headers)
+                response.raise_for_status()
+                return response.json()
+            except requests.exceptions.RequestException as e:
+                print(f"An error occurred: {e}")
+                return None
+
 
     def save(self, file_location):
         """
