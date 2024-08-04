@@ -37,6 +37,34 @@ class AIModel:
     def add_metric(self, key: str, value: str) -> None:
         self.metrics[key] = value
 
+    def remove_nulls(self, model_structure):
+        """
+        Cleans the model structure by removing the null values.
+        :param model_structure:
+        :return:
+        """
+        if isinstance(model_structure, dict):
+            return {k: self.remove_nulls(v) for k, v in model_structure.items() if v is not None and self.remove_nulls(v)}
+        elif isinstance(model_structure, list):
+            return [self.remove_nulls(v) for v in model_structure if v is not None and self.remove_nulls(v) != []]
+        else:
+            return model_structure
+
+    def populate_model_structure(self, trained_model):
+        """
+        Populates model structure based on trained model and framework.
+        :param trained_model:
+        :param framework:
+        :return:
+        """
+        if self.framework is not None and self.framework == 'tensorflow':
+            json_structure = json.loads(trained_model.to_json())
+            cleaned_structure = self.remove_nulls(json_structure)
+            self.model_structure = cleaned_structure
+        else:
+            self.model_structure = {}
+
+
 @dataclass
 class BiasAnalysis:
     demographic_parity_difference: float

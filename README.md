@@ -50,9 +50,11 @@ ai_model = AIModel(
             license="BSD-3 Clause",
             framework="sklearn",
             model_type="random_forest",
-            test_accuracy=accuracy,
-            model_structure = None
+            test_accuracy=accuracy
         )
+# Automatically populate model structure into the model
+ai_model.populate_model_structure(trained_model)
+# add the model information to the Model Card
 mc.ai_model = ai_model
 ```
 
