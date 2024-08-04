@@ -23,7 +23,7 @@ class ModelCardTestCase(unittest.TestCase):
             model_type="cnn",
             test_accuracy=0.89
         )
-        self.bias_analysis = BiasAnalysis(0.1, 0.2, 20, 10, 10, 20, 0.1, 0.2, 0.2, 0.1)
+        self.bias_analysis = BiasAnalysis(0.1, 0.2)
         self.xai_analysis = ExplainabilityAnalysis("XAI Test 2", [Metric("xai1", 0.5), Metric("xai2", 0.8)])
 
         self.mc = ModelCard(
@@ -34,7 +34,9 @@ class ModelCardTestCase(unittest.TestCase):
             keywords="cnn, pytorch, icicle",
             author="Joe",
             input_data="cifar10",
+            input_type="image",
             output_data="None",
+            category="classification",
             ai_model=self.aimodel,
             bias_analysis=self.bias_analysis,
             xai_analysis=self.xai_analysis
@@ -63,10 +65,9 @@ class ModelCardTestCase(unittest.TestCase):
         """
         # Convert the dataclass object to JSON string using the custom encoder
         mc_json = json.dumps(self.mc, cls=ModelCardJSONEncoder, indent=4)
-
-        with open('../icicle_model_card/schema/schema.json', 'r') as schema_file:
+        print(mc_json)
+        with open('../patra_model_card/schema/schema.json', 'r') as schema_file:
             schema = json.load(schema_file)
-
         try:
             validate(json.loads(mc_json), schema)
         except:
@@ -86,12 +87,16 @@ class ModelCardTestCase(unittest.TestCase):
         :return:
         """
         mc = ModelCard(
-            name="tset-mc",
-            version="test-version",
-            short_description="short desc",
-            full_description="full_desc",
-            keywords="test keyword",
-            author="test author"
+            name="icicle-camera-traps",
+            version="0.1",
+            short_description="Camera Traps CNN inference model card",
+            full_description="Camera Traps CNN full descr inference model card",
+            keywords="cnn, pytorch, icicle",
+            author="Joe",
+            input_data="cifar10",
+            input_type="image",
+            output_data="None",
+            category="classification"
         )
         aimodel = AIModel(
             name="DenseNet",
@@ -104,7 +109,7 @@ class ModelCardTestCase(unittest.TestCase):
             model_type="dnn",
             test_accuracy=0.89
         )
-        bias_analysis = BiasAnalysis(0.1, 0.2, 20, 10, 10, 20, 0.1, 0.2, 0.2, 0.1)
+        bias_analysis = BiasAnalysis(0.1, 0.2)
         xai_analysis = ExplainabilityAnalysis("XAI Test 2", [Metric("xai1", 0.5), Metric("xai2", 0.8)])
 
         mc.ai_model = aimodel

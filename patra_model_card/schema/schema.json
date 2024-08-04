@@ -27,10 +27,6 @@
       "type": "string",
       "description": "The author or creator of the Model Card"
     },
-    "input_type": {
-      "type": "string",
-      "description": "Type of the input data"
-    },
     "input_data": {
       "type": "string",
       "description": "The ID of the Datasheet"
@@ -139,8 +135,7 @@
         "license",
         "framework",
         "test_accuracy",
-        "model_type",
-        "input_type"
+        "model_type"
       ]
     },
     "bias_analysis": {
