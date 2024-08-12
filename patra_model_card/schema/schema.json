@@ -139,7 +139,7 @@
       ]
     },
     "bias_analysis": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "demographic_parity_diff": {
           "type": "number"
