@@ -176,7 +176,7 @@
     "input_data",
     "input_type",
     "output_data",
-    "ai_model",
+    "ai_model"
   ],
   "fields": {
     "metrics": {
