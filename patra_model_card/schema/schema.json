@@ -177,7 +177,6 @@
     "input_type",
     "output_data",
     "ai_model",
-    "bias_analysis"
   ],
   "fields": {
     "metrics": {
