@@ -15,7 +15,7 @@ setup(
         'attrs~=23.1.0',
         'jsonschema~=4.18.6',
         'fairlearn~=0.9.0',
-        'scipy~=1.14.0',
+        'scipy~=1.13.1',
         'scikit-learn~=1.5.0',
         'shap~=0.45.1',
         'pandas~=2.1.4',
