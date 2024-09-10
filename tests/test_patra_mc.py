@@ -1,14 +1,14 @@
-import jsonschema
-
 from patra_model_card.patra_model_card import (AIModel, BiasAnalysis,
                                                ExplainabilityAnalysis, Metric,
                                                ModelCard, ModelCardJSONEncoder)
 import json
 import unittest
-from jsonschema import validate
-import os.path
+from jsonschema import validate, exceptions
+import os
 
-SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir, 'patra_model_card/schema/schema.json')
+SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir,
+                           'patra_model_card/schema/schema.json')
+
 
 class ModelCardTestCase(unittest.TestCase):
 
@@ -69,7 +69,7 @@ class ModelCardTestCase(unittest.TestCase):
             schema = json.load(schema_file)
         try:
             validate(json.loads(mc_json), schema)
-        except jsonschema.exceptions.ValidationError as e:
+        except exceptions.ValidationError as e:
             self.fail(f"Validation Error: {e}")
 
     def test_validate(self):
