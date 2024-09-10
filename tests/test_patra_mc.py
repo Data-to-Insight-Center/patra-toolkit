@@ -4,7 +4,8 @@ import unittest
 from jsonschema import validate
 import os.path
 
-SCHEMA_JSON = os.path.join(os.path.dirname(__file__), '../patra_model_card/schema', 'schema.json')
+SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir,
+                           'patra_model_card/schema/schema.json')
 
 
 class ModelCardTestCase(unittest.TestCase):
@@ -64,7 +65,7 @@ class ModelCardTestCase(unittest.TestCase):
         """
         # Convert the dataclass object to JSON string using the custom encoder
         mc_json = json.dumps(self.mc, cls=ModelCardJSONEncoder, indent=4)
-        with open('../patra_model_card/schema/schema.json', 'r') as schema_file:
+        with open(SCHEMA_JSON, 'r') as schema_file:
             schema = json.load(schema_file)
         try:
             validate(json.loads(mc_json), schema)
