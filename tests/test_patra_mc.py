@@ -33,9 +33,9 @@ class ModelCardTestCase(unittest.TestCase):
             full_description="Camera Traps CNN full descr inference model card",
             keywords="cnn, pytorch, icicle",
             author="Joe",
-            input_data="cifar10",
+            input_data="https://archive.ics.uci.edu/dataset/2/adult",
             input_type="image",
-            output_data="None",
+            output_data="https://archive.ics.uci.edu/dataset/2/adult",
             category="classification",
             ai_model=self.aimodel,
             bias_analysis=self.bias_analysis,
@@ -69,10 +69,8 @@ class ModelCardTestCase(unittest.TestCase):
             schema = json.load(schema_file)
         try:
             validate(json.loads(mc_json), schema)
-            return False
         except:
-            # self.fail("Validation Error!")
-            return True
+            self.fail("Validation Error!")
 
     def test_validate(self):
         """
@@ -80,7 +78,7 @@ class ModelCardTestCase(unittest.TestCase):
         :return:
         """
         is_valid = self.mc.validate()
-        self.assertFalse(is_valid)
+        self.assertTrue(is_valid)
 
     def test_framework_enum(self):
         """
@@ -94,9 +92,9 @@ class ModelCardTestCase(unittest.TestCase):
             full_description="Camera Traps CNN full descr inference model card",
             keywords="cnn, pytorch, icicle",
             author="Joe",
-            input_data="",
+            input_data="https://archive.ics.uci.edu/dataset/2/adult",
             input_type="image",
-            output_data="",
+            output_data="https://archive.ics.uci.edu/dataset/2/adult",
             category="classification"
         )
         aimodel = AIModel(
@@ -131,7 +129,7 @@ class ModelCardTestCase(unittest.TestCase):
         # convert the json string back to python model
         mc_converted = json.loads(mc_json)
 
-        self.assertEqual(mc_converted['input_data'], "cifar10")
+        self.assertEqual(mc_converted['input_data'], "https://archive.ics.uci.edu/dataset/2/adult")
 
     def test_json_save(self):
         """
