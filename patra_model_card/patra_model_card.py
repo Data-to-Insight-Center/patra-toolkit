@@ -9,6 +9,7 @@ from patra_model_card.fairlearn_bias import BiasAnalyzer
 from patra_model_card.shap_xai import ExplainabilityAnalyser
 import pkg_resources
 import requests
+import jsonschema
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 
@@ -156,10 +157,15 @@ class ModelCard:
         try:
             with open(SCHEMA_JSON, 'r') as schema_file:
                 schema = json.load(schema_file)
-            validate(json.loads(mc_json), schema)
+            jsonschema.validate(instance=json.loads(mc_json), schema=schema)
             return True
+        except jsonschema.ValidationError as e:
+            # Print the error message only
+            print(e.message)  # This will print only the specific error message
+            return False
         except Exception as e:
-            print(e)
+            # For any other exception, print the error message
+            print(f"An unexpected error occurred: {e}")
             return False
 
     def submit(self, patra_server_url):

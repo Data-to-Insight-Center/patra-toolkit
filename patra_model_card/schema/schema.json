@@ -2,6 +2,27 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Patra Model Card",
   "type": "object",
+   "commonFields": {
+    "urlOrDoi": {
+      "oneOf": [
+        {
+          "pattern": "^(https?|ftp):\\/\\/[^\\s/$.?#].[\\S]*$",
+          "description": "Must be a valid URL"
+        },
+        {
+          "pattern": "^10\\.\\d{4,9}/[^\\s]+$",
+          "description": "or valid DOI"
+        },
+        {
+          "enum": [""],
+          "description": "or empty"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
   "properties": {
     "name": {
       "type": "string",
@@ -28,16 +49,14 @@
       "description": "The author or creator of the Model Card"
     },
     "input_data": {
-      "type": "string",
-      "description": "The ID of the Datasheet"
+      "$ref": "#/commonFields/urlOrDoi"
     },
     "input_type": {
       "type": "string",
       "description": "Type of the input data"
     },
     "output_data": {
-      "type": "string",
-      "description": "The ID of the output if any"
+      "$ref": "#/commonFields/urlOrDoi"
     },
     "category": {
       "type": "string",
