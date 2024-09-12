@@ -13,3 +13,4 @@ jobs:
         run: |
           pip install -r requirements.txt
           python3 -m unittest tests/test_patra_mc.py
+          python3 -m unittest tests/test_patra_inout_data.py

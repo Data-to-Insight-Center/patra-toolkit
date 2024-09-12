@@ -33,9 +33,9 @@ class ModelCardTestCase(unittest.TestCase):
             full_description="Camera Traps CNN full descr inference model card",
             keywords="cnn, pytorch, icicle",
             author="Joe",
-            input_data="cifar10",
+            input_data="https://archive.ics.uci.edu/dataset/2/adult",
             input_type="image",
-            output_data="None",
+            output_data="https://archive.ics.uci.edu/dataset/2/adult",
             category="classification",
             ai_model=self.aimodel,
             bias_analysis=self.bias_analysis,
@@ -92,9 +92,9 @@ class ModelCardTestCase(unittest.TestCase):
             full_description="Camera Traps CNN full descr inference model card",
             keywords="cnn, pytorch, icicle",
             author="Joe",
-            input_data="cifar10",
+            input_data="https://archive.ics.uci.edu/dataset/2/adult",
             input_type="image",
-            output_data="None",
+            output_data="https://archive.ics.uci.edu/dataset/2/adult",
             category="classification"
         )
         aimodel = AIModel(
@@ -129,7 +129,7 @@ class ModelCardTestCase(unittest.TestCase):
         # convert the json string back to python model
         mc_converted = json.loads(mc_json)
 
-        self.assertEqual(mc_converted['input_data'], "cifar10")
+        self.assertEqual(mc_converted['input_data'], "https://archive.ics.uci.edu/dataset/2/adult")
 
     def test_json_save(self):
         """
