@@ -192,5 +192,26 @@
         }
       }
     }
+  },
+     "commonFields": {
+    "urlOrDoi": {
+      "oneOf": [
+        {
+          "pattern": "^(https?|ftp):\\/\\/[^\\s/$.?#].[\\S]*$",
+          "description": "Must be a valid URL"
+        },
+        {
+          "pattern": "^10\\.\\d{4,9}/[^\\s]+$",
+          "description": "or valid DOI"
+        },
+        {
+          "enum": [""],
+          "description": "or empty"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
   }
 }

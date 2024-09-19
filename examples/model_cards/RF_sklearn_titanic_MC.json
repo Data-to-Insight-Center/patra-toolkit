@@ -1,0 +1,45 @@
+{
+    "name": "Titanic Disaster Analysis",
+    "version": "0.1",
+    "short_description": "Titanic Disaster Analysis using Tensorflow for demonstration of Patra Model Cards.",
+    "full_description": "We have trained a ML model using the tensorflow framework to predict profit for Titanic Disaster Analysis dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
+    "keywords": "titanic, tensorflow, explainability, fairness, patra",
+    "author": "Isuru Gamage",
+    "input_type": "Tabular",
+    "category": "classification",
+    "input_data": "https://www.kaggle.com/datasets/monisamir/titanic-disaster-analysis",
+    "output_data": "https://github.iu.edu/d2i/dockerhub/tensorflow/titanic_modelv01",
+    "ai_model": {
+        "name": "Survived prediction tensorflow model",
+        "version": "0.1",
+        "description": "Census classification problem using Tensorflow Neural Network using the Titanic Disaster Analysis Dataset",
+        "owner": "Isuru Gamage",
+        "location": "https://github.iu.edu/d2i/sales/tensorflow_model",
+        "license": "BSD-3 Clause",
+        "framework": "sklearn",
+        "model_type": "random_forest",
+        "test_accuracy": 2,
+        "foundational_model": "None",
+        "model_structure": {},
+        "metrics": [
+            {
+                "key": "Test loss",
+                "value": 0.7
+            }
+        ]
+    },
+    "bias_analysis": {
+        "demographic_parity_diff": 0.7025032938076416,
+        "equal_odds_difference": 0.5402097902097902
+    },
+    "xai_analysis": {
+        "Sex": 0.1697710482178081,
+        "Pclass": 0.1347820516835418,
+        "Embarked": 0.06926017489662627,
+        "Age": 0.04875104294103949,
+        "Fare": 0.025205657370825064,
+        "SibSp": 0.01915087276836857,
+        "Parch": 0.01913200013208552
+    },
+    "model_requirements": null
+}

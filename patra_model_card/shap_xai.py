@@ -14,17 +14,21 @@ class ExplainabilityAnalyser:
     def calculate_xai_features(self, n_features=10):
         # calculate the shap values
         explainer = shap.Explainer(self.model, self.dataset)
-        shap_values = explainer.shap_values(self.dataset)
+        values = explainer(self.dataset)
+        shap_values = values.values
 
-        # calculate the feature importance
-        feature_importance = pd.DataFrame(shap_values, columns=self.column_names).abs().mean(axis=0)
+        if len(shap_values.shape) == 3:
+            shap_values = abs(shap_values).mean(axis=2)
+            print(shap_values.shape)
 
-        # Get the top n features
-        top_features = feature_importance.sort_values(ascending=False).head(n_features)
+        feature_importance_df = pd.DataFrame(shap_values, columns=self.column_names).abs().mean(axis=0)
+        top_features = feature_importance_df.sort_values(ascending=False).head(n_features)
 
         result_dict = {}
+
         for name, importance in top_features.items():
-            # removing special characters to support the knowledge graph keys.
+
             filtered_name = re.sub(r'[^a-zA-Z0-9]', '_', name)
             result_dict[filtered_name] = float(importance)
+
         return result_dict
