@@ -19,7 +19,6 @@ class ExplainabilityAnalyser:
 
         if len(shap_values.shape) == 3:
             shap_values = abs(shap_values).mean(axis=2)
-            print(shap_values.shape)
 
         feature_importance_df = pd.DataFrame(shap_values, columns=self.column_names).abs().mean(axis=0)
         top_features = feature_importance_df.sort_values(ascending=False).head(n_features)
