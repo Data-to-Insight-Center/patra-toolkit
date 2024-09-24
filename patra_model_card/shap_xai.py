@@ -15,7 +15,6 @@ class ExplainabilityAnalyser:
     def calculate_xai_features(self, n_features=10):
         num_input_features = 7
         # calculate the shap values
-        # explainer = shap.Explainer(self.model, self.dataset)
 
         if isinstance(self.model, torch.nn.Module):
             def create_model(input_size):
