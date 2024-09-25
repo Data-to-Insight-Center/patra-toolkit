@@ -21,6 +21,7 @@ setup(
         'pandas~=2.1.4',
         'numpy~=1.26.4',
         'pyrsistent~=0.19.3',
-        'requests~=2.32.3'
+        'requests~=2.32.3',
+        'torch~=2.4.1'
     ]
 )
