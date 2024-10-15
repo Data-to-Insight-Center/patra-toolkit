@@ -31,7 +31,6 @@ class AIModel:
     framework: str
     model_type: str
     test_accuracy: float
-    foundational_model: Optional[str] = ""
     model_structure: Optional[object] = field(default_factory=dict)
     metrics: Dict[str, str] = field(default_factory=dict)
 
@@ -90,6 +89,7 @@ class ModelCard:
     input_type: str
     input_data: Optional[str] = ""
     output_data: Optional[str] = ""
+    foundational_model: Optional[str] = ""
     ai_model: Optional[AIModel] = None
     bias_analysis: Optional[BiasAnalysis] = None
     xai_analysis: Optional[ExplainabilityAnalysis] = None
