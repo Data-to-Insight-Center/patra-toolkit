@@ -24,14 +24,12 @@ from patra_model_card.patra_model_card import ModelCard, AIModel
 2. Initialize the Model Card
 ```python
 mc = ModelCard(
-            name="Titanic Disaster Analysis",
+            name="UCI Adult Data Analysis via Random Forest",
             version="0.1",
-            short_description="Titanic Disaster Analysis using Tensorflow for demonstration of Patra Model Cards.",
-            full_description="We have trained a ML model using the tensorflow framework to predict profit for Titanic Disaster Analysis dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
-            keywords="titanic, tensorflow, explainability, fairness, patra",
-            author="Isuru Gamage",
-            input_type="Tabular",
-            category="classification",
+            short_description="UCI Adult Data analysis using SKLearn and Random Forest",
+            full_description="Using a Random Forest to train on UCI Adult Data Analysis",
+            keywords="uci adult, sklearn, random_forest, explainability, fairness, fairlearn, shap",
+            author="Sachith Withana",
             foundational_model="None",
         )
 ```
