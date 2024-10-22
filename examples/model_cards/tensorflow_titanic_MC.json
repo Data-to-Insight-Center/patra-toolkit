@@ -20,7 +20,6 @@
         "framework": "tensorflow",
         "model_type": "dnn",
         "test_accuracy": 0.7765362858772278,
-        "foundational_model": "None",
         "model_structure": {
             "module": "keras",
             "class_name": "Sequential",

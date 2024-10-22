@@ -20,7 +20,6 @@
         "framework": "pytorch",
         "model_type": "cnn",
         "test_accuracy": 0,
-        "foundational_model": "None",
         "model_structure": {},
         "metrics": {}
     },

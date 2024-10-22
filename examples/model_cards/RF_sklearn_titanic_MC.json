@@ -20,7 +20,6 @@
         "framework": "sklearn",
         "model_type": "random_forest",
         "test_accuracy": 2,
-        "foundational_model": "None",
         "model_structure": {},
         "metrics": [
             {
