@@ -9,6 +9,7 @@
     "category": "classification",
     "input_data": "https://archive.ics.uci.edu/dataset/2/adult",
     "output_data": "https://github.iu.edu/d2i/dockerhub/tensorflow/adult_modelv01",
+    "foundational_model": "None",
     "ai_model": {
         "name": "Income prediction tensorflow model",
         "version": "0.1",

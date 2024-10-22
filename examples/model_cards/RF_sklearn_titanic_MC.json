@@ -9,6 +9,7 @@
     "category": "classification",
     "input_data": "https://www.kaggle.com/datasets/monisamir/titanic-disaster-analysis",
     "output_data": "https://github.iu.edu/d2i/dockerhub/tensorflow/titanic_modelv01",
+    "foundational_model": "None",
     "ai_model": {
         "name": "Survived prediction tensorflow model",
         "version": "0.1",

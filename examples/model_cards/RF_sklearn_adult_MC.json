@@ -9,6 +9,7 @@
     "category": "classification",
     "input_data": "https://archive.ics.uci.edu/dataset/2/adult",
     "output_data": "https://github.iu.edu/swithana/mcwork/rf_sklearn/adult_model.pkl",
+    "foundational_model": "None",
     "ai_model": {
         "name": "UCI Adult Random Forest model",
         "version": "0.1",

@@ -9,6 +9,7 @@
     "category": "classification",
     "input_data": "https://huggingface.co/datasets/cifar10",
     "output_data": "https://huggingface.co/models/sachith/image_recognition_model_v01",
+    "foundational_model": "None",
     "ai_model": {
         "name": "Image Recognition Hugging Face Model",
         "version": "0.1",
