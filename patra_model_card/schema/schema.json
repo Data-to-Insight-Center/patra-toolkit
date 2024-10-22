@@ -183,6 +183,9 @@
           }
         }
       }
+    },
+    "model_requirements": {
+      "type": ["object", "null"]
     }
   },
   "required": [
