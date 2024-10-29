@@ -9,10 +9,10 @@ The **Patra Model Card toolkit** is designed to assist in creating comprehensive
 - **Metadata Handling**: Easily add and customize model metadata such as name, version, description, keywords, and more.
 
 ### Notebook Examples
-You can find usage examples in the [Notebooks](./patra-toolkit/examples/notebooks) folder.
+You can find usage examples in the [Notebooks](./examples/notebooks) folder.
 
 ### Model cards Examples
-You can find usage examples in the [Model Cards](./patra-toolkit/examples/model_cards) folder.
+You can find usage examples in the [Model Cards](./examples/model_cards) folder.
 
 ### Installation
 In your colab notebook run the following command to install the Model Card
