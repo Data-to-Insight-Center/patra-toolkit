@@ -161,10 +161,10 @@ mc.populate_requirements()
 ```
 
 ## Usage
-### Notebook Examples
+#### Notebook Examples
 You can find usage examples in the [Notebooks](./examples/notebooks) folder.
 
-### Model card Examples
+#### Model card Examples
 You can find usage examples in the [Model Cards](./examples/model_cards) folder.
 
 ## License
