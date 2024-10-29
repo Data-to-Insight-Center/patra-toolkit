@@ -19,10 +19,6 @@ You can find usage examples in the [Model Cards](./examples/model_cards) folder.
 
 ## Getting Started
 
-```shell
-pip install -r requirements.txt
-```
-
 ### Installation
 In your colab notebook run the following command to install the Model Card
 ```shell
