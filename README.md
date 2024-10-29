@@ -1,6 +1,6 @@
 # Patra Model Card toolkit
 
-## Description
+## About The Project
 
 The **Patra Model Card toolkit** is designed to assist in creating model cards that capture essential metadata for machine learning models, including fairness, explainability, and performance metrics. This toolkit simplifies the process of defining, organizing, and displaying this information, with the capability to store it in a graph database for enhanced transparency and traceability.
 
@@ -8,11 +8,18 @@ The **Patra Model Card toolkit** is designed to assist in creating model cards t
 - **Easy Installation**: Install directly in your Colab notebook or locally for development.
 - **Metadata Handling**: Easily add and customize model metadata such as name, version, description, keywords, and more.
 
-### Notebook Examples
-You can find usage examples in the [Notebooks](./examples/notebooks) folder.
+## Getting Started
 
-### Model card Examples
-You can find usage examples in the [Model Cards](./examples/model_cards) folder.
+### Prerequisites
+
+Before you begin, ensure you have met the following requirements:
+
+- Python 3.8 or later
+- Install the necessary packages listed in `requirements.txt`:
+
+```shell
+pip install -r requirements.txt
+```
 
 ### Installation
 In your colab notebook run the following command to install the Model Card
@@ -153,4 +160,18 @@ You can optionally capture the python package requirements and it's versions int
 mc.populate_requirements()
 ```
 
+## Usage
+### Notebook Examples
+You can find usage examples in the [Notebooks](./examples/notebooks) folder.
+
+### Model card Examples
+You can find usage examples in the [Model Cards](./examples/model_cards) folder.
+
+## License
+
+### Distributed under the BSD 3-Clause License. See `LICENSE.txt` for more information.
+
+## Contact
+
+### Sachith Withana - swithana@iu.edu
 
