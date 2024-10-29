@@ -2,7 +2,7 @@
 
 ## Description
 
-The **Patra Model Card toolkit** is designed to assist in creating comprehensive model cards that capture essential metadata for machine learning models, including fairness, explainability, and performance metrics. This toolkit simplifies the process of defining, organizing, and displaying this information, with the capability to store it in a graph database for enhanced transparency and traceability.
+The **Patra Model Card toolkit** is designed to assist in creating model cards that capture essential metadata for machine learning models, including fairness, explainability, and performance metrics. This toolkit simplifies the process of defining, organizing, and displaying this information, with the capability to store it in a graph database for enhanced transparency and traceability.
 
 ### Key Features:
 - **Easy Installation**: Install directly in your Colab notebook or locally for development.
