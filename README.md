@@ -168,10 +168,8 @@ You can find usage examples in the [Notebooks](./examples/notebooks) folder.
 You can find usage examples in the [Model Cards](./examples/model_cards) folder.
 
 ## License
-
-#### Distributed under the BSD 3-Clause License. See `LICENSE.txt` for more information.
+Distributed under the BSD 3-Clause License. See `LICENSE.txt` for more information.
 
 ## Contact
-
-#### Sachith Withana - swithana@iu.edu
+Sachith Withana - swithana@iu.edu
 
