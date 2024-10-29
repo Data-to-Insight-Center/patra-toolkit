@@ -6,10 +6,6 @@ The **Patra Model Card toolkit** is designed to simplify and accelerate the crea
 
 With a semi-automated pipeline, the toolkit reduces the time and effort required to develop model cards by populating a set of descriptive fields independently, with no need for user input. These fields include fairness metrics and explainability information, generated via automated scanners and directly added to the model card.
 
-### Key Features:
-- **Easy Installation**: Install directly in your Colab notebook or locally for development.
-- **Metadata Handling**: Easily add and customize model metadata such as name, version, description, keywords, and more.
-
 ## Usage
 #### Notebook Examples
 You can find usage examples in the [Notebooks](./examples/notebooks) folder.
