@@ -11,7 +11,7 @@ The **Patra Model Card toolkit** is designed to assist in creating model cards t
 ### Notebook Examples
 You can find usage examples in the [Notebooks](./examples/notebooks) folder.
 
-### Model cards Examples
+### Model card Examples
 You can find usage examples in the [Model Cards](./examples/model_cards) folder.
 
 ### Installation
