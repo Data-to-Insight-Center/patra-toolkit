@@ -157,6 +157,4 @@ mc.populate_requirements()
 ## License
 Distributed under the BSD 3-Clause License. See `LICENSE.txt` for more information.
 
-## Contact
-Sachith Withana - swithana@iu.edu
 
