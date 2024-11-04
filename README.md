@@ -1,7 +1,5 @@
 # Patra Model Card toolkit
 
-## About The Project
-
 The **Patra Model Card toolkit** is designed to simplify and accelerate the creation of AI/ML model cards by automating the addition of essential descriptive information about AI/ML models. The toolkit streamlines the integration of standardized details through a schema that captures key characteristics of AI/ML models.
 
 With a semi-automated pipeline, the toolkit reduces the time and effort required to develop model cards by populating a set of descriptive fields independently, with no need for user input. These fields include fairness metrics and explainability information, generated via automated scanners and directly added to the model card.
@@ -18,18 +16,15 @@ You can find usage examples in the [Model Cards](./examples/model_cards) folder.
 ## Getting Started
 
 ### Installation
-In your colab notebook run the following command to install the Model Card
+To install the Model Card in a Colab notebook, Run:
 ```shell
 !pip install 'git+https://github.com/Data-to-Insight-Center/patra-toolkit.git'
 ```
 
-For developer run the following instead to install locally:
+To install the Model Card locally, Clone the repository and run:
 ```shell
 pip install -e <local_git_dir>/patra_model_card
 ```
-
-### How to use the library
-Please refer to the tensorflow_adult_nn notebook for an example on how you can use this toolkit. 
 
 ##### Adding the model metadata
 
@@ -51,7 +46,16 @@ mc = ModelCard(
         )
 ```
 
-3. Add details to the Model Card
+### **Parameters**
+  - **name**: Name of the model card
+  - **version**: Version of the model card
+  - **short_description**: Short description of the model card
+  - **full_description**: Full description of the model card
+  - **keywords**: Keywords for the model card
+  - **author**: Author of the model card
+  - **foundational_model**: Foundational model for the model card
+
+4. Add details to the Model Card
 ```python
 mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
 mc.output_data = 'https://github.iu.edu/swithana/mcwork/rf_sklearn/adult_model.pkl'
@@ -75,24 +79,16 @@ ai_model.populate_model_structure(trained_model)
 # add the model information to the Model Card
 mc.ai_model = ai_model
 ```
-
-Types of framework entries provided:
-- tensorflow
-- sklearn
-- pytorch
-- other
-
-Types of model types provided:
-- cnn
-- decision_tree
-- dnn
-- rnn
-- svm
-- kmeans
-- random_forest
-- llm
-- lstm
-- other
+### **Parameters**
+- **name**: Name of the AI Model
+- **version**: Version of the AI Model
+- **description**: Description of the AI Model
+- **owner**: Owner of the AI Model
+- **location**: Location of the AI Model
+- **license**: License of the AI Model
+- **framework**: Framework used to build the AI Model (tensorflow, sklearn, pytorch, other)
+- **model_type**: Type of the AI Model (cnn, decision_tree, dnn, rnn, svm, kmeans, random_forest, llm, lstm, other)
+- **test_accuracy**: Test accuracy of the AI Model
 
 You can also add custom metrics: 
 ```python
@@ -158,5 +154,3 @@ mc.populate_requirements()
 
 ## License
 Distributed under the BSD 3-Clause License. See `LICENSE.txt` for more information.
-
-
