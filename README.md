@@ -2,9 +2,11 @@
 
 ## About The Project
 
-The **Patra Model Card toolkit** is designed to simplify and accelerate the creation of model cards by automating the addition of essential descriptive information about machine learning models. This toolkit streamlines the integration of standardized details through a schema that captures key characteristics of machine learning models.
+The **Patra Model Card toolkit** is designed to simplify and accelerate the creation of AI/ML model cards by automating the addition of essential descriptive information about AI/ML models. The toolkit streamlines the integration of standardized details through a schema that captures key characteristics of AI/ML models.
 
 With a semi-automated pipeline, the toolkit reduces the time and effort required to develop model cards by populating a set of descriptive fields independently, with no need for user input. These fields include fairness metrics and explainability information, generated via automated scanners and directly added to the model card.
+
+The copyright to the Patra Model Card toolkit is held by the Indiana University Board of Trustees. 
 
 ## Usage
 #### Notebook Examples
