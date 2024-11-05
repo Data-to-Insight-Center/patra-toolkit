@@ -24,6 +24,10 @@
     }
   },
   "properties": {
+    "id": {
+      "type": "string",
+      "description": "The id of the Model Card"
+    },
     "name": {
       "type": "string",
       "description": "The name of the Model Card"
@@ -184,9 +188,15 @@
         }
       }
     },
-    "model_requirements": {
-      "type": ["object", "null"]
-    }
+"model_requirements": {
+  "type": [
+    "array",
+    "null"
+  ],
+  "items": {
+    "type": "string"
+  }
+}
   },
   "required": [
     "name",

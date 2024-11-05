@@ -10,6 +10,7 @@ from patra_model_card.shap_xai import ExplainabilityAnalyser
 import pkg_resources
 import requests
 import jsonschema
+import hashlib
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 
@@ -89,6 +90,7 @@ class ModelCard:
     bias_analysis: Optional[BiasAnalysis] = None
     xai_analysis: Optional[ExplainabilityAnalysis] = None
     model_requirements: Optional[List] = None
+    id: Optional[str] = field(init=False, default=None)
 
     def __str__(self):
         """
@@ -154,14 +156,40 @@ class ModelCard:
         """
         if self.validate():
             try:
-                headers = {'Content-Type': 'application/json'}  # Set the content type to JSON
-                response = requests.post(patra_server_url, json=json.loads(str(self)), headers=headers)
-                response.raise_for_status()
-                return response.json()
+                if patra_server_url:
+                    self.id = self._get_hash_id(patra_server_url)
+                    patra_submit_url = patra_server_url + "/upload_mc"
+                    headers = {'Content-Type': 'application/json'}
+                    response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
+                    response.raise_for_status()
+                    return response.json()
+                else:
+                    return {"An error occurred: valid patra_server_url not provided. Unable to upload."}
             except requests.exceptions.RequestException as e:
                 print(f"An error occurred: {e}")
                 return None
 
+    def _get_hash_id(self, patra_server_url):
+        """
+        Retrieve a unique hash generated from the provided name, version, and author. If patra_server_url is null or the server is down, generate the hash ID locally.
+        :param patra_server_url:
+        :return:
+        """
+        combined_string = f"{self.name}:{self.version}:{self.author}"
+        try:
+            if patra_server_url:
+                patra_hash_url = patra_server_url + "/get_hash_id"
+                headers = {'Content-Type': 'application/json'}
+                response = requests.get(patra_hash_url,params={"combined_string": combined_string}, headers=headers)
+                response.raise_for_status()
+                return response.json()
+            else:
+                id_hash = hashlib.sha256(combined_string.encode()).hexdigest()
+                return id_hash
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+            id_hash = hashlib.sha256(combined_string.encode()).hexdigest()
+            return  id_hash
 
     def save(self, file_location):
         """
