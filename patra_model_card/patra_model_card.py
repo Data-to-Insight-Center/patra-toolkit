@@ -40,9 +40,7 @@ class AIModel:
 
     def remove_nulls(self, model_structure):
         """
-        Cleans the model structure by removing the null values.
-        :param model_structure:
-        :return:
+        Removes the null values from the model structure.
         """
         if isinstance(model_structure, dict):
             return {k: self.remove_nulls(v) for k, v in model_structure.items() if v is not None and self.remove_nulls(v)}
@@ -53,10 +51,7 @@ class AIModel:
 
     def populate_model_structure(self, trained_model):
         """
-        Populates model structure based on trained model and framework.
-        :param trained_model:
-        :param framework:
-        :return:
+        Populates the model structure from the trained model.
         """
         if self.framework is not None and self.framework == 'tensorflow':
             json_structure = json.loads(trained_model.to_json())
@@ -99,21 +94,13 @@ class ModelCard:
 
     def __str__(self):
         """
-        Overriding the __str__ to pretty print the model card in Json format.
-        :return:
+        Converts the model card to a JSON string.
         """
         return json.dumps(self.__dict__, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
 
     def populate_bias(self, dataset, true_labels, predicted_labels, sensitive_feature_name, sensitive_feature_data, model):
         """
         Calculates the fairness metrics and adds it to the model card.
-        :param dataset:
-        :param true_labels:
-        :param predicted_labels:
-        :param sensitive_feature_name:
-        :param sensitive_feature_data:
-        :param model:
-        :return:
         """
         bias_analyzer = BiasAnalyzer(dataset, true_labels, predicted_labels, sensitive_feature_name,
                                           sensitive_feature_data, model)
@@ -122,20 +109,14 @@ class ModelCard:
 
     def populate_xai(self, train_dataset, column_names, model, n_features=10):
         """
-        Calculates the top n_features in terms of feature importance and add's it to the model card.
-        :param train_dataset:
-        :param column_names:
-        :param model:
-        :param n_features:
-        :return:
+        Calculates the top n_features in terms of feature importance and adds it to the model card.
         """
         xai_analyzer = ExplainabilityAnalyser(train_dataset, column_names, model)
         self.xai_analysis = xai_analyzer.calculate_xai_features(n_features)
 
     def populate_requirements(self):
         """
-        gets all the package requirements for this model.
-        :return:
+        Gets all the package requirements for this model.
         """
         # Patra related packages. Remove this from the requirement list.
         exclude_packages = {"shap", "fairlearn"}
@@ -150,8 +131,7 @@ class ModelCard:
 
     def validate(self):
         """
-        Validates the current model against the Model Card schema
-        :return:
+        Validates the current model against the Model Card schema.
         """
         # Convert the dataclass object to JSON string using the custom encoder
         mc_json = self.__str__()
@@ -173,8 +153,6 @@ class ModelCard:
     def submit(self, patra_server_url):
         """
         Validates and submits the model card to the Patra Server.
-        :param patra_server_url:
-        :return:
         """
         if self.validate():
             try:
