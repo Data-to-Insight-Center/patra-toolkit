@@ -9,6 +9,7 @@
     "category": "classification",
     "input_data": "https://archive.ics.uci.edu/dataset/2/adult",
     "output_data": "https://github.iu.edu/d2i/dockerhub/tensorflow/adult_modelv01",
+    "foundational_model": "None",
     "ai_model": {
         "name": "Income prediction tensorflow model",
         "version": "0.1",
@@ -19,7 +20,6 @@
         "framework": "tensorflow",
         "model_type": "dnn",
         "test_accuracy": 0.7635498046875,
-        "foundational_model": "None",
         "model_structure": {
             "module": "keras",
             "class_name": "Sequential",

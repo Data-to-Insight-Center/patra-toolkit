@@ -58,6 +58,10 @@
     "output_data": {
       "$ref": "#/commonFields/urlOrDoi"
     },
+    "foundational_model": {
+      "description": "If a foundational model has been used, provide the model ID",
+      "type": "string"
+        },
     "category": {
       "type": "string",
       "enum": [
@@ -99,10 +103,6 @@
         },
         "license": {
           "description": "Licence the model",
-          "type": "string"
-        },
-        "foundational_model": {
-          "description": "If a foundational model has been used, provide the model ID",
           "type": "string"
         },
         "model_structure": {
@@ -183,6 +183,9 @@
           }
         }
       }
+    },
+    "model_requirements": {
+      "type": ["object", "null"]
     }
   },
   "required": [

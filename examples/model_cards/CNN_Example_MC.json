@@ -9,6 +9,7 @@
     "category": "classification",
     "input_data": "https://www.cs.toronto.edu/~kriz/cifar.html",
     "output_data": "https://github.com/yourusername/cifar10_cnn_model",
+    "foundational_model": "None",
     "ai_model": {
         "name": "CIFAR-10 Image Classification CNN model",
         "version": "0.1",
@@ -19,7 +20,6 @@
         "framework": "tensorflow",
         "model_type": "cnn",
         "test_accuracy": 0.705299973487854,
-        "foundational_model": "None",
         "model_structure": {
             "module": "keras",
             "class_name": "Sequential",

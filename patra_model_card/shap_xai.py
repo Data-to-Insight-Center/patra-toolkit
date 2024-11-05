@@ -1,7 +1,6 @@
 import shap
 import pandas as pd
 import re
-import torch
 
 class ExplainabilityAnalyser:
     """
@@ -12,17 +11,9 @@ class ExplainabilityAnalyser:
         self.column_names = column_names
         self.model = model
 
-    def calculate_xai_features(self, n_features=10):
-        num_input_features = 7
+    def calculate_xai_features(self, n_features=10, pytorch = False):
         # calculate the shap values
-
-        if isinstance(self.model, torch.nn.Module):
-            def create_model(input_size):
-                self.model = torch.nn.Sequential(
-                    torch.nn.Linear(input_size, 1)
-                )
-                return self.model
-            self.model = create_model(num_input_features)
+        if pytorch:
             explainer = shap.DeepExplainer(self.model, self.dataset)
         else:
             explainer = shap.Explainer(self.model, self.dataset)
