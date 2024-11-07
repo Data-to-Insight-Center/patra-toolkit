@@ -33,27 +33,29 @@ pip install -e <local_git_dir>/patra_model_card
 
 - **Import the Model Card toolkit**:
     ```python
-    from patra_model_card.patra_model_card import ModelCard, AIModel
+    from patra_model_card import ModelCard, AIModel
     ```
 
 - **Initialize the Model Card**:
     ```python
     mc = ModelCard(
-        name="UCI Adult Data Analysis via Random Forest",
-        version="0.1",
-        short_description="UCI Adult Data analysis using SKLearn and Random Forest",
-        full_description="Using a Random Forest to train on UCI Adult Data Analysis",
-        keywords="uci adult, sklearn, random_forest, explainability, fairness, fairlearn, shap",
-        author="Sachith Withana",
-        foundational_model="None",
-    )
+            name="UCI Adult Data Analysis model using Tensorflow",
+            version="0.1",
+            short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
+            full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
+            keywords="uci adult, tensorflow, explainability, fairness, patra",
+            author="Sachith Withana",
+            input_type="Tabular",
+            category="classification",
+            foundational_model="None"
+        )
     ```
 
    **Model Card Parameters**:
    - `name`: Name of the model card
    - `version`: Version of the model card
-   - `short_description`: Short description of the model
-   - `full_description`: Full description of the model
+   - `short_description`: Brief description of the model card
+   - `full_description`: Full description of the model card
    - `keywords`: Keywords for model discoverability
    - `author`: Author of the model card
    - `foundational_model`: Foundational model used, if any
@@ -84,15 +86,15 @@ mc.output_data = 'https://github.iu.edu/swithana/mcwork/rf_sklearn/adult_model.p
    ```
 
    **AI Model Parameters**:
-   - `name`: Name of the AI model
-   - `version`: Version of the AI model
-   - `description`: Brief description
-   - `owner`: Owner or organization
-   - `location`: Link to model file
-   - `license`: License type (e.g., BSD-3)
-   - `framework`: Framework used (tensorflow, sklearn, pytorch, other)
-   - `model_type`: Type of model (cnn, decision_tree, dnn, rnn, svm, kmeans, random_forest, llm, lstm, other)
-   - `test_accuracy`: Accuracy of the model on the test dataset
+   - `name`: Name of the AI/ML model
+   - `version`: Version of the AI/ML model
+   - `description`: Description of the AI/ML model
+   - `owner`: Owner of the AI/ML model
+   - `location`: Location of the stored AI/ML model
+   - `license`: License for the AI/ML Model (e.g., BSD-3)
+   - `framework`: Framework used to build AI/ML model (tensorflow, sklearn, pytorch, other)
+   - `model_type`: Type of AI/ML model (cnn, decision_tree, dnn, rnn, svm, kmeans, random_forest, llm, lstm, other)
+   - `test_accuracy`: Accuracy of AI/ML model for the test dataset
 
 
 - **Populate Model Structure**:

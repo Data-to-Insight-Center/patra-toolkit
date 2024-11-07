@@ -42,6 +42,12 @@ class AIModel:
     def remove_nulls(self, model_structure):
         """
         Removes the null values from the model structure.
+
+        Args:
+            model_structure (object): The model structure
+
+        Returns:
+            object: The model structure without null values
         """
         if isinstance(model_structure, dict):
             return {k: self.remove_nulls(v) for k, v in model_structure.items() if v is not None and self.remove_nulls(v)}
@@ -53,6 +59,12 @@ class AIModel:
     def populate_model_structure(self, trained_model):
         """
         Populates the model structure from the trained model.
+
+        Args:
+            trained_model (object): The trained model
+
+        Returns:
+            None
         """
         if self.framework is not None and self.framework == 'tensorflow':
             json_structure = json.loads(trained_model.to_json())
@@ -96,12 +108,26 @@ class ModelCard:
     def __str__(self):
         """
         Converts the model card to a JSON string.
+
+        Returns:
+            str: The JSON string representation of the model card
         """
         return json.dumps(self.__dict__, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
 
     def populate_bias(self, dataset, true_labels, predicted_labels, sensitive_feature_name, sensitive_feature_data, model):
         """
         Calculates the fairness metrics and adds it to the model card.
+
+        Args:
+            dataset (object): The dataset
+            true_labels (list): The true labels
+            predicted_labels (list): The predicted labels
+            sensitive_feature_name (str): The sensitive feature name
+            sensitive_feature_data (list): The sensitive feature data
+            model (object): The model
+
+        Returns:
+            None
         """
         bias_analyzer = BiasAnalyzer(dataset, true_labels, predicted_labels, sensitive_feature_name,
                                           sensitive_feature_data, model)
@@ -111,6 +137,15 @@ class ModelCard:
     def populate_xai(self, train_dataset, column_names, model, n_features=10):
         """
         Calculates the top n_features in terms of feature importance and adds it to the model card.
+
+        Args:
+            train_dataset (object): The training dataset
+            column_names (list): The column names
+            model (object): The model
+            n_features (int): The number of features to calculate
+
+        Returns:
+            None
         """
         xai_analyzer = ExplainabilityAnalyser(train_dataset, column_names, model)
         self.xai_analysis = xai_analyzer.calculate_xai_features(n_features)
@@ -118,6 +153,9 @@ class ModelCard:
     def populate_requirements(self):
         """
         Gets all the package requirements for this model.
+
+        Returns:
+            None
         """
         # Patra related packages. Remove this from the requirement list.
         exclude_packages = {"shap", "fairlearn"}
@@ -133,6 +171,9 @@ class ModelCard:
     def validate(self):
         """
         Validates the current model against the Model Card schema.
+
+        Returns:
+            bool: True if the model card is valid, False
         """
         # Convert the dataclass object to JSON string using the custom encoder
         mc_json = self.__str__()
@@ -154,6 +195,9 @@ class ModelCard:
     def submit(self, patra_server_url):
         """
         Validates and submits the model card to the Patra Server.
+
+        Args:
+            patra_server_url (str): The Patra Server URL
         """
         if self.validate():
             try:
@@ -173,6 +217,9 @@ class ModelCard:
     def _get_hash_id(self, patra_server_url):
         """
         Retrieve a unique hash generated from the provided name, version, and author. If patra_server_url is null or the server is down, generate the hash ID locally.
+
+        Args:
+            patra_server_url (str): The Patra Server URL
         """
         combined_string = f"{self.name}:{self.version}:{self.author}"
         try:
@@ -201,6 +248,12 @@ class ModelCard:
 class ModelCardJSONEncoder(JSONEncoder):
     """
     JSON encoder for the model card.
+
+    Args:
+        JSONEncoder (object): The JSON encoder
+
+    Returns:
+        object: The JSON encoder object
     """
     def default(self, obj):
         if isinstance(obj, (ModelCard, Metric, AIModel, ExplainabilityAnalysis, BiasAnalysis)):

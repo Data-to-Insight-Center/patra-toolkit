@@ -2,14 +2,14 @@ from setuptools import setup
 
 setup(
     name='patra_model_card',
-    version='0.3',
+    version='1.0',
     packages=['tests', 'patra_model_card'],
     package_data={'patra_model_card': ['schema/schema.json']},
     include_package_data=True,
     url='https://github.com/Data-to-Insight-Center/patra-toolkit.git',
     license='BSD-3-Clause',
     author='Data to Insight Center',
-    author_email='d2i@indiana.edu',
+    author_email='d2i@iu.edu',
     description='Patra Model Card Toolkit',
     install_requires=[
         'attrs~=23.1.0',
