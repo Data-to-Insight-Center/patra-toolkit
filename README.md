@@ -149,6 +149,10 @@ mc.output_data = 'https://github.iu.edu/swithana/mcwork/rf_sklearn/adult_model.p
    mc.populate_requirements()
    ```
 
+- **Submit**: Upload the model card to the Patra server:
+   ```python
+   mc.submit(<patra_server_url>)
+   ```
 ---
 
 ## License
