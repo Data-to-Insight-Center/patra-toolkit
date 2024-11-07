@@ -1,8 +1,23 @@
 # Patra Model Card Toolkit
 
-The **Patra Model Card Toolkit** is designed to simplify and accelerate the creation of AI/ML model cards, automating the addition of essential descriptive information. This toolkit streamlines the integration of standardized details through a schema that captures key characteristics of AI/ML models, supporting transparency, accountability, and ease of use in model documentation.
+The Patra Toolkit is a component of the Patra ModelCards framework designed to simplify the process of creating and documenting AI/ML models. It provides a structured schema that guides users in providing essential information about their models, including details about the model's purpose, development process, and performance. The toolkit also includes features for semi-automating the capture of key information, such as fairness and explainability metrics, through integrated analysis tools. By reducing the manual effort involved in creating model cards, the Patra Toolkit encourages researchers and developers to adopt best practices for documenting their models, ultimately contributing to greater transparency and accountability in AI/ML development.
 
-The toolkit's semi-automated pipeline reduces the time and effort required to develop model cards by populating descriptive fields such as fairness metrics and explainability insights through automated scanners.
+The features of the Patra Toolkit's includes:
+
+- **Structured Schema:** The Patra Toolkit offers a structured schema to guide users in providing crucial model information. This includes details such as the model's intended use, development process, and performance metrics.
+  
+- **Semi-Automated Information Capture:** The toolkit supports semi-automatic capture of certain descriptive fields. It achieves this by running a variety of automated scanners, with the results incorporated into the Model Card.  These include,
+    - **Fairness Scanner** evaluates the model's fairness by examining its predictions across different groups. 
+    - **Explainability Scanner** generates explainability metrics to help understand the model's decision-making process.
+    - **Model Requirements Scanner** captures the Python packages and versions required to run the model.
+
+- **Validation and JSON Generation:** Once a Model Card is created using the Toolkit, it validates the data against the defined schema to ensure completeness and accuracy. It then generates the Model Card as a JSON file, ready for integration into the Patra Knowledge Base.
+  
+- **Integration with Patra Knowledge Base:** The Model Cards created using the Patra Toolkit are designed to be added to the [Patra Knowledge Base](https://github.com/Data-to-Insight-Center/patra-kg), which is a graph database that stores and manages these cards.
+
+The Patra Toolkit plays a crucial role in promoting transparency and accountability in AI/ML development by making it easier for developers to create comprehensive and informative Model Cards. By automating certain aspects of the documentation process and providing a structured schema, the Toolkit reduces the barriers to entry for creating high-quality model documentation.
+
+For more information, please refer to the [Patra ModelCards paper](https://ieeexplore.ieee.org/document/10678710).
 
 ## Usage
 
