@@ -158,6 +158,7 @@
             "llm",
             "random_forest",
             "lstm",
+            "gnn",
             "other"
           ]
         },
