@@ -48,7 +48,7 @@ pip install -e <local_git_dir>/patra_model_card
 
 - **Import the Model Card toolkit**:
     ```python
-    from patra_model_card import ModelCard, AIModel
+    from patra_model_card.patra_model_card import ModelCard, AIModel
     ```
 
 - **Initialize the Model Card**:
