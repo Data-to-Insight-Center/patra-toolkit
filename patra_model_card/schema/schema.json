@@ -66,14 +66,37 @@
       "description": "If a foundational model has been used, provide the model ID",
       "type": "string"
         },
-    "category": {
-      "type": "string",
-      "enum": [
+   "category": {
+    "type": "string",
+    "enum": [
         "classification",
         "regression",
         "clustering",
+        "anomaly detection",
+        "dimensionality reduction",
+        "reinforcement learning",
+        "natural language processing",
+        "computer vision",
+        "recommendation systems",
+        "time series forecasting",
+        "graph learning",
+        "generative modeling",
+        "transfer learning",
+        "self-supervised learning",
+        "semi-supervised learning",
+        "unsupervised learning",
+        "causal inference",
+        "multi-task learning",
+        "metric learning",
+        "density estimation",
+        "multi-label classification",
+        "ranking",
+        "structured prediction",
+        "neural architecture search",
+        "sequence modeling",
+        "embedding learning",
         "other"
-      ]
+    ]
     },
     "documentation": {
       "type": "string",
