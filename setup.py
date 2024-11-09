@@ -15,12 +15,12 @@ setup(
         'attrs>=23.1.0',
         'jsonschema>=4.18.6',
         'fairlearn~=0.9.0',
-        'scipy>=1.13.1',
+        'scipy~=1.13.1',
         'scikit-learn>=1.5.0',
         'shap>=0.45.1',
         'pandas>=2.1.4',
         'numpy<=1.26.4',
-        'pyrsistent>=0.19.3',
+        'pyrsistent~=0.19.3',
         'requests>=2.32.3',
     ]
 )
