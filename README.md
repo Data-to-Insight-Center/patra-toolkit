@@ -170,6 +170,12 @@ mc.output_data = 'https://github.iu.edu/swithana/mcwork/rf_sklearn/adult_model.p
    ```
 ---
 
+## Uninstalling the model card and its requirements
+```python
+!pip uninstall -y patra_model_card
+!pip uninstall -y attrs jsonschema fairlearn scipy scikit-learn shap pandas numpy pyrsistent requests
+```
+
 ## License
 The Patra Model Card toolkit is developed by Indiana University and distributed under the BSD 3-Clause License. See `LICENSE.txt` for more details.
 
