@@ -33,7 +33,7 @@ For more information, please refer to the [Patra ModelCards paper](https://ieeex
 #### Colab Installation
 To install the Patra Model Card toolkit in a Google Colab notebook, run the following:
 ```shell
-!pip install 'git+https://github.com/Data-to-Insight-Center/patra-toolkit.git'
+!pip install 'git+https://github.com/Data-to-Insight-Center/patra-toolkit.git' --no-deps
 ```
 
 #### Local Installation
