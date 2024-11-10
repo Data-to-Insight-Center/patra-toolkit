@@ -20,10 +20,14 @@ The Patra Toolkit plays a crucial role in promoting transparency and accountabil
 For more information, please refer to the [Patra ModelCards paper](https://ieeexplore.ieee.org/document/10678710).
 
 ## Usage
+You can find the descriptions of the Model Card parameters in the [schema descriptions document](https://github.com/Data-to-Insight-Center/patra-toolkit/blob/main/Schema_Descriptions.md).
 
-### [Notebook Examples](./examples/notebooks)
-### [Model Card Examples](./examples/model_cards)
+Examples of Notebooks and model cards can be found below. 
 
+[Notebook Examples](./examples/notebooks)
+
+[Model Card Examples](./examples/model_cards)
+ 
 ---
 
 ## Getting Started
