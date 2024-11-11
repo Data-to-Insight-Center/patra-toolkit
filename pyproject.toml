@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "patra-toolkit"
+version = "0.1.0"
+description = "Patra Model Card Toolkit"
+authors = ["Data to Insight Center <d2i@iu.edu>"]
+license = "BSD-3-Clause"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
