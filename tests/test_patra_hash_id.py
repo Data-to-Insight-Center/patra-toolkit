@@ -1,4 +1,6 @@
+import hashlib
 import os
+
 import unittest
 from unittest.mock import patch, MagicMock
 import requests
