@@ -370,9 +370,7 @@ class ModelCardJSONEncoder(JSONEncoder):
         default: Serializes non-serializable fields.
     """
 
-    def default(self, o):
-        if isinstance(o, (AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric)):
-            return o.__dict__
-        if isinstance(o, set):
-            return list(o)
-        return JSONEncoder.default(self, o)
+    def default(self, obj):
+        if isinstance(obj, (ModelCard, Metric, AIModel, ExplainabilityAnalysis, BiasAnalysis)):
+            return obj.__dict__
+        return super().default(obj)
