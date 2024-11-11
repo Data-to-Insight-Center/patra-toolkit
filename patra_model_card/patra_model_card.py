@@ -9,8 +9,8 @@ import jsonschema
 import pkg_resources
 import requests
 
-from patra_model_card.fairlearn_bias import BiasAnalyzer
-from patra_model_card.shap_xai import ExplainabilityAnalyser
+from .fairlearn_bias import BiasAnalyzer
+from .shap_xai import ExplainabilityAnalyser
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 
