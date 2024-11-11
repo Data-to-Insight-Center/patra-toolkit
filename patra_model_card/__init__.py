@@ -1,3 +1,3 @@
-from .patra_model_card import *
-from .fairlearn_bias import *
-from .shap_xai import *
+import importlib.metadata
+
+__version__ = importlib.metadata.version("patra-model-card")

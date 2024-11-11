@@ -1,4 +1,4 @@
-name: Patra-CI
+name: CI
 
 on: [push]
 
