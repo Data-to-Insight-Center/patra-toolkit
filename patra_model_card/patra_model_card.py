@@ -320,7 +320,7 @@ class ModelCard:
                 response.raise_for_status()
                 return response.json()
             except requests.exceptions.RequestException as e:
-                print(f"An error occurred: {e}")
+                print("The Patra Server cannot be reached. Please try again.")
                 return None
         return {"An error occurred: valid patra_server_url not provided. Unable to upload."}
 
@@ -345,7 +345,7 @@ class ModelCard:
             else:
                 return hashlib.sha256(combined_string.encode()).hexdigest()
         except requests.exceptions.RequestException as e:
-            print(f"An error occurred: {e}")
+            print("Could not connect to the Patra Server, generating the ID locally")
             return hashlib.sha256(combined_string.encode()).hexdigest()
 
     def save(self, file_location):
