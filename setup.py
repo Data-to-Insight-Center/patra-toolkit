@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='patra_model_card',
-    version='1.0',
+    version='0.1',
     packages=['tests', 'patra_model_card'],
     package_data={'patra_model_card': ['schema/schema.json']},
     include_package_data=True,
