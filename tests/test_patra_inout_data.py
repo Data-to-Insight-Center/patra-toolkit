@@ -1,8 +1,7 @@
-from patra_model_card.patra_model_card import *
-import json
+import os
 import unittest
-from jsonschema import validate
-import os.path
+
+from patra_model_card import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir,
                            'patra_model_card/schema/schema.json')

@@ -1,8 +1,10 @@
-from patra_model_card.patra_model_card import *
+import os
 import unittest
-import os.path
 from unittest.mock import patch, MagicMock
 import requests
+
+from patra_model_card import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric
+
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir,
                            'patra_model_card/schema/schema.json')
 
