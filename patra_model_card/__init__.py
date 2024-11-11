@@ -1,3 +1,1 @@
-import importlib.metadata
-
-__version__ = importlib.metadata.version("patra-model-card")
+from .patra_model_card import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric, ModelCardJSONEncoder
