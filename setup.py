@@ -17,6 +17,6 @@ setup(
         'shap~=0.46.0',
         'pandas>=2.0.0',
         'numpy>2.0.0',
-        'pyrsistent~=0.19.3',
+        'requests>2.32.2',
     ]
 )
