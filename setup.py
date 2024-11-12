@@ -15,9 +15,9 @@ setup(
     install_requires=[
         'jsonschema>4.18.5',
         'fairlearn~=0.11.0',
-        'shap~=0.46.0',
+        'shap~=0.45.0',
         'pandas>=2.0.0',
-        'numpy>2.0.0',
+        'numpy>=1.23.5,<2.0.0',
         'requests>2.32.2',
     ]
 )
