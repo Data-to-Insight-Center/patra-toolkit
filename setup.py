@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='patra-toolkit',
-    version='0.1.1',
+    version='0.1.2',
     packages=['tests', 'patra_toolkit'],
     package_data={'patra_toolkit': ['schema/schema.json']},
     include_package_data=True,
