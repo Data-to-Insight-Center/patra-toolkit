@@ -7,7 +7,7 @@
 project = 'Patra Model Card Toolkit'
 copyright = '2024, Data To Insights Center, Indiana University'
 author = 'Data To Insights Center, Indiana University'
-release = '1.0'
+release = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
 extensions = [
