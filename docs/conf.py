@@ -9,7 +9,7 @@
 project = 'Patra Model Card Toolkit'
 copyright = '2024, Data To Insights Center, Indiana University'
 author = 'Data To Insights Center, Indiana University'
-release = '1.0'
+release = '0.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -17,10 +17,13 @@ release = '1.0'
 extensions = [
     'sphinx.ext.autodoc',   # Automatically generate documentation from docstrings
     'sphinx.ext.napoleon',  # Support for Google-style docstrings
+    'sphinx.ext.autosummary'
 ]
 import os
 import sys
-sys.path.insert(0, os.path.abspath('/Users/neeleshkarthikeyan/d2i/patra-toolkit/patra_model_card'))
+sys.path.insert(0, os.path.abspath('../../'))
+print("sys.path: ", sys.path)
+
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
