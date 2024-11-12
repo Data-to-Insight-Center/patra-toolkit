@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='patra_toolkit',
+    name='patra-toolkit',
     version='0.1.1',
     packages=['tests', 'patra_toolkit'],
     package_data={'patra_toolkit': ['schema/schema.json']},
@@ -10,7 +10,7 @@ setup(
     license='BSD-3-Clause',
     author='Data to Insight Center',
     author_email='d2i@iu.edu',
-    description='Patra Model Card Toolkit',
+    description='Toolkit for semi-automated modelcard creation for AI/ML models.',
     install_requires=[
         'jsonschema>4.18.5',
         'fairlearn~=0.11.0',
