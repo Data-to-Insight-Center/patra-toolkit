@@ -31,7 +31,7 @@ We recommend creating a new virtual environment using venv before installing pat
 #### Installing Patra Model Card
 The latest version can be installed from PyPI:
 ```shell
-pip install patra_toolkit
+pip install patra-toolkit
 ```
 
 For local installation, clone the repository and install using:
@@ -44,7 +44,7 @@ pip install -e <local_git_dir>/patra_toolkit
 Find the descriptions of the Model Card parameters in the [schema descriptions document](https://github.com/Data-to-Insight-Center/patra-toolkit/blob/main/Schema_Descriptions.md).
 
 ```python
-from patra_toolkit import ModelCard
+from patra-toolkit import ModelCard
 
 mc = ModelCard(
   name="UCI Adult Data Analysis model using Tensorflow",
@@ -66,7 +66,7 @@ mc.output_data = 'https://github.iu.edu/swithana/mcwork/rf_sklearn/adult_model.p
 ### Initialize an AI/ML Model
 
 ```python
-from patra_toolkit import AIModel
+from patra-toolkit import AIModel
 
 ai_model = AIModel(
   name="UCI Adult Random Forest model",

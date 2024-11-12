@@ -31,13 +31,13 @@ The latest version can be installed from PyPI:
 
 .. code-block:: console
 
-    pip install patra-model-card
+    pip install patra-toolkit
 
 For local installation, clone the repository and install using:
 
 .. code-block:: console
 
-    pip install -e <local_git_dir>/patra_model_card
+    pip install -e <local_git_dir>/patra_toolkit
 
 Usage
 =====
@@ -49,7 +49,7 @@ Find the descriptions of the Model Card parameters in the schema descriptions do
 
 .. code-block:: python
 
-    from patra_model_card import ModelCard
+    from patra-toolkit import ModelCard
 
     mc = ModelCard(
         name="UCI Adult Data Analysis model using Tensorflow",
@@ -72,7 +72,7 @@ Initialize an AI/ML Model
 
 .. code-block:: python
 
-    from patra_model_card import AIModel
+    from patra-toolkit import AIModel
 
     ai_model = AIModel(
        name="UCI Adult Random Forest model",
