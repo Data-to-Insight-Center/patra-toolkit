@@ -25,9 +25,6 @@ For more information, please refer to the [Patra ModelCards paper](https://ieeex
 
 ## Getting Started
 
-#### (Optional) Create a virtual environment for using Patra Model Card Toolkit
-We recommend creating a new virtual environment using venv before installing patra-model-card. To do so, please follow instructions [here](https://docs.python.org/3/library/venv.html).
-
 #### Installing Patra Model Card
 The latest version can be installed from PyPI:
 ```shell
