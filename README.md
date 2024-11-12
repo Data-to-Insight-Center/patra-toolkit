@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://patra-toolkit.readthedocs.io/en/latest/)
 [![Build Status](https://github.com/Data-to-Insight-Center/patra-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-to-Insight-Center/patra-toolkit/actions)
-[![PyPI version](https://badge.fury.io/py/patra-model-card.svg)](https://pypi.org/project/patra-model-card/)
+[![PyPI version](https://badge.fury.io/py/patra-toolkit.svg)](https://pypi.org/project/patra-toolkit/)
 
 The Patra Toolkit is a component of the Patra ModelCards framework designed to simplify the process of creating and documenting AI/ML models. It provides a structured schema that guides users in providing essential information about their models, including details about the model's purpose, development process, and performance. The toolkit also includes features for semi-automating the capture of key information, such as fairness and explainability metrics, through integrated analysis tools. By reducing the manual effort involved in creating model cards, the Patra Toolkit encourages researchers and developers to adopt best practices for documenting their models, ultimately contributing to greater transparency and accountability in AI/ML development.
 
@@ -24,9 +24,6 @@ The Patra Toolkit plays a crucial role in promoting transparency and accountabil
 For more information, please refer to the [Patra ModelCards paper](https://ieeexplore.ieee.org/document/10678710).
 
 ## Getting Started
-
-#### (Optional) Create a virtual environment for using Patra Model Card Toolkit
-We recommend creating a new virtual environment using venv before installing patra-model-card. To do so, please follow instructions [here](https://docs.python.org/3/library/venv.html).
 
 #### Installing Patra Model Card
 The latest version can be installed from PyPI:
@@ -118,7 +115,7 @@ mc.submit(<patra_server_url>)
 ---
 ## Examples
 Explore the following example notebooks and model cards to learn more about how to use the Patra Model Card Toolkit:
-[Notebook Examples](./examples/notebooks), [Model Card Examples](./examples/model_cards)
+[Notebook Example](./examples/notebooks/tensorflow_adult_nn.ipynb), [Model Card Example](./examples/model_cards/tesorflow_adult_nn_MC.json)
 
 ---
 
