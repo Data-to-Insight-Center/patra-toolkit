@@ -5,10 +5,10 @@ import unittest
 from unittest.mock import patch, MagicMock
 import requests
 
-from patra_model_card import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric
+from patra_toolkit import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir,
-                           'patra_model_card/schema/schema.json')
+                           'patra_toolkit/schema/schema.json')
 
 
 class ModelCardTestCase2(unittest.TestCase):
