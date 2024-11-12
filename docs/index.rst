@@ -2,12 +2,12 @@
 Patra Model Card Toolkit
 ==========================
 
+The Patra Toolkit is a component of the Patra ModelCards framework designed to simplify the process of creating and documenting AI/ML models. It provides a structured schema that guides users in providing essential information about their models, including details about the model's purpose, development process, and performance.
+
 .. toctree::
    :maxdepth: 2
 
-   source/patra_model_card
-
-The Patra Toolkit is a component of the Patra ModelCards framework designed to simplify the process of creating and documenting AI/ML models. It provides a structured schema that guides users in providing essential information about their models, including details about the model's purpose, development process, and performance.
+   source/patra_toolkit
 
 Features
 ========
@@ -20,8 +20,7 @@ Features
 Getting Started
 ===============
 
-(Optional) Create a virtual environment for using Patra Model Card Toolkit
--------------------------------------------------------------------------
+**(Optional) Create a virtual environment for using Patra Model Card Toolkit**
 
 We recommend creating a new virtual environment using venv before installing patra-model-card.
 
