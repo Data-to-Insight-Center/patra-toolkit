@@ -115,7 +115,7 @@ mc.submit(<patra_server_url>)
 ---
 ## Examples
 Explore the following example notebooks and model cards to learn more about how to use the Patra Model Card Toolkit:
-[Notebook Examples](./examples/notebooks), [Model Card Examples](./examples/model_cards)
+[Notebook Example](./examples/notebooks/tensorflow_adult_nn.ipynb), [Model Card Example](./examples/model_cards/tesorflow_adult_nn_MC.json)
 
 ---
 
