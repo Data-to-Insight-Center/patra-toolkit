@@ -6,7 +6,7 @@
 
 The Patra Toolkit is a component of the Patra ModelCards framework designed to simplify the process of creating and documenting AI/ML models. It provides a structured schema that guides users in providing essential information about their models, including details about the model's purpose, development process, and performance. The toolkit also includes features for semi-automating the capture of key information, such as fairness and explainability metrics, through integrated analysis tools. By reducing the manual effort involved in creating model cards, the Patra Toolkit encourages researchers and developers to adopt best practices for documenting their models, ultimately contributing to greater transparency and accountability in AI/ML development.
 
-The features of the Patra Toolkit's includes:
+## Features 
 
 - **Structured Schema:** The Patra Toolkit offers a structured schema to guide users in providing crucial model information. This includes details such as the model's intended use, development process, and performance metrics.
   
@@ -25,7 +25,7 @@ For more information, please refer to the [Patra ModelCards paper](https://ieeex
 
 ## Getting Started
 
-### (Optional) Create a virtual environment for using Patra Model Card Toolkit
+#### (Optional) Create a virtual environment for using Patra Model Card Toolkit
 We recommend creating a new virtual environment using venv before installing patra-model-card. To do so, please follow instructions [here](https://docs.python.org/3/library/venv.html).
 
 #### Installing Patra Model Card
@@ -40,7 +40,7 @@ pip install -e <local_git_dir>/patra_model_card
 ```
 
 ## Usage
-### Creating a Model Card
+### Create a Model Card
 Find the descriptions of the Model Card parameters in the [schema descriptions document](https://github.com/Data-to-Insight-Center/patra-toolkit/blob/main/Schema_Descriptions.md).
 
 ```python
@@ -63,7 +63,7 @@ mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
 mc.output_data = 'https://github.iu.edu/swithana/mcwork/rf_sklearn/adult_model.pkl'
 ```
 
-### Initializing an AI/ML Model
+### Initialize an AI/ML Model
 ```python
 from patra_model_card import AIModel
 
