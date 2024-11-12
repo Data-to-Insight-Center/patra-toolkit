@@ -4,10 +4,10 @@ import unittest
 
 from jsonschema import validate
 
-from patra_toolkit import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric, ModelCardJSONEncoder
+from patra-toolkit import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric, ModelCardJSONEncoder
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir,
-                           'patra_toolkit/schema/schema.json')
+                           'patra-toolkit/schema/schema.json')
 
 
 class ModelCardTestCase(unittest.TestCase):
