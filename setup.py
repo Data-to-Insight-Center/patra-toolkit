@@ -12,15 +12,11 @@ setup(
     author_email='d2i@iu.edu',
     description='Patra Model Card Toolkit',
     install_requires=[
-        'attrs~=23.1.0',
-        'jsonschema~=4.18.6',
+        'jsonschema>4.18.5',
         'fairlearn~=0.11.0',
-        'scipy~=1.13.1',
-        'scikit-learn~=1.5.0',
         'shap~=0.46.0',
-        'pandas~=2.2.3',
-        'numpy<=2.1.3',
-        'pyrsistent~=0.19.3',
-        'requests>=2.32.3',
+        'pandas>=2.0.0',
+        'numpy>2.0.0',
+        'requests>2.32.2',
     ]
 )
