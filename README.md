@@ -36,7 +36,7 @@ pip install patra-model-card
 
 For local installation, clone the repository and install using:
 ```shell
-pip install -e <local_git_dir>/patra_model_card
+pip install -e <local_git_dir>/patra_toolkit
 ```
 
 ## Usage
@@ -44,19 +44,19 @@ pip install -e <local_git_dir>/patra_model_card
 Find the descriptions of the Model Card parameters in the [schema descriptions document](https://github.com/Data-to-Insight-Center/patra-toolkit/blob/main/Schema_Descriptions.md).
 
 ```python
-from patra_model_card import ModelCard
+from patra_toolkit import ModelCard
 
 mc = ModelCard(
-        name="UCI Adult Data Analysis model using Tensorflow",
-        version="0.1",
-        short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
-        full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
-        keywords="uci adult, tensorflow, explainability, fairness, patra",
-        author="Sachith Withana",
-        input_type="Tabular",
-        category="classification",
-        foundational_model="None"
-    )
+  name="UCI Adult Data Analysis model using Tensorflow",
+  version="0.1",
+  short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
+  full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
+  keywords="uci adult, tensorflow, explainability, fairness, patra",
+  author="Sachith Withana",
+  input_type="Tabular",
+  category="classification",
+  foundational_model="None"
+)
 
 # Add Model Metadata
 mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
@@ -64,19 +64,20 @@ mc.output_data = 'https://github.iu.edu/swithana/mcwork/rf_sklearn/adult_model.p
 ```
 
 ### Initialize an AI/ML Model
+
 ```python
-from patra_model_card import AIModel
+from patra_toolkit import AIModel
 
 ai_model = AIModel(
-   name="UCI Adult Random Forest model",
-   version="0.1",
-   description="Census classification problem using Random Forest",
-   owner="Sachith Withana",
-   location="https://github.iu.edu/swithana/mcwork/randomforest/adult_model.pkl",
-   license="BSD-3 Clause",
-   framework="sklearn",
-   model_type="random_forest",
-   test_accuracy=accuracy
+  name="UCI Adult Random Forest model",
+  version="0.1",
+  description="Census classification problem using Random Forest",
+  owner="Sachith Withana",
+  location="https://github.iu.edu/swithana/mcwork/randomforest/adult_model.pkl",
+  license="BSD-3 Clause",
+  framework="sklearn",
+  model_type="random_forest",
+  test_accuracy=accuracy
 )
 
 # Populate Model Structure

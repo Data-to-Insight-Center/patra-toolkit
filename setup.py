@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(
-    name='patra_model_card',
+    name='patra_toolkit',
     version='0.1.1',
-    packages=['tests', 'patra_model_card'],
-    package_data={'patra_model_card': ['schema/schema.json']},
+    packages=['tests', 'patra_toolkit'],
+    package_data={'patra_toolkit': ['schema/schema.json']},
     include_package_data=True,
     url='https://github.com/Data-to-Insight-Center/patra-toolkit.git',
     license='BSD-3-Clause',
