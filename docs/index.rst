@@ -49,7 +49,7 @@ Find the descriptions of the Model Card parameters in the schema descriptions do
 
 .. code-block:: python
 
-    from patra-toolkit import ModelCard
+    from patra_toolkit import ModelCard
 
     mc = ModelCard(
         name="UCI Adult Data Analysis model using Tensorflow",
@@ -72,7 +72,7 @@ Initialize an AI/ML Model
 
 .. code-block:: python
 
-    from patra-toolkit import AIModel
+    from patra_toolkit import AIModel
 
     ai_model = AIModel(
        name="UCI Adult Random Forest model",
