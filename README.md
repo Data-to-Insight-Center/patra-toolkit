@@ -31,7 +31,7 @@ We recommend creating a new virtual environment using venv before installing pat
 #### Installing Patra Model Card
 The latest version can be installed from PyPI:
 ```shell
-pip install patra-model-card
+pip install patra_toolkit
 ```
 
 For local installation, clone the repository and install using:
