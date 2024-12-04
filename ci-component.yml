@@ -1,4 +1,4 @@
-- id: Patra:0.1.2
+- id: PatraToolkit:0.1.2
   name: Patra Model Card Toolkit
   status: Release
   website: https://github.com/Data-to-Insight-Center/patra-toolkit
@@ -23,6 +23,6 @@
   developerDocumentationAvailable: true
   developerDocumentationUrl: https://patra-toolkit.readthedocs.io/en/latest/
   trainingTutorialsAvailable: false
-  trainingTutorialsUrl: false
+  trainingTutorialsUrl:
   usageMetricsCollected: false
   publicAccess: true
