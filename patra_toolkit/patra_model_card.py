@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os.path
+import tempfile
 from dataclasses import dataclass, field
 from json import JSONEncoder
 from typing import List, Optional, Dict
@@ -8,9 +9,11 @@ from typing import List, Optional, Dict
 import jsonschema
 import pkg_resources
 import requests
+import torch
 
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
+from .storage_backend import get_storage_backend
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 
@@ -26,6 +29,7 @@ class Metric:
     """
     key: str
     value: str
+
 
 @dataclass
 class AIModel:
@@ -123,11 +127,7 @@ class AIModel:
 @dataclass
 class BiasAnalysis:
     """
-    Class to store results from bias analysis.
-
-    Args:
-        demographic_parity_difference (float): The difference in demographic parity between groups.
-        equal_odds_difference (float): The difference in equal odds between groups.
+    Stores results from bias analysis.
     """
     demographic_parity_difference: float
     equal_odds_difference: float
@@ -136,11 +136,7 @@ class BiasAnalysis:
 @dataclass
 class ExplainabilityAnalysis:
     """
-    Class to store explainability metrics.
-
-    Args:
-        name (str): Name of the explainability method used.
-        metrics (List[Metric]): List of metrics related to explainability analysis.
+    Stores explainability metrics.
     """
     name: str
     metrics: List[Metric] = field(default_factory=list)
@@ -224,6 +220,7 @@ class ModelCard:
     xai_analysis: Optional[ExplainabilityAnalysis] = None
     model_requirements: Optional[List] = None
     id: Optional[str] = field(init=False, default=None)
+    model_storage_url: Optional[str] = field(init=False, default="")
 
     def __str__(self):
         """
@@ -301,28 +298,77 @@ class ModelCard:
             print(f"An unexpected error occurred: {e}")
             return False
 
-    def submit(self, patra_server_url):
+    def submit(self,
+               patra_server_url: str,
+               model: Optional[torch.nn.Module] = None,
+               model_format: Optional[str] = "pt",
+               storage_backend: Optional[str] = None) -> dict:
         """
-        Validates and submits the model card to the specified Patra server.
+        Submits the model card to the Patra server and, optionally, saves and uploads the model
+        to an external storage backend.
 
         Args:
-            patra_server_url (str): The Patra server URL where the model card should be submitted.
+            patra_server_url (str): The Patra server URL.
+            model (torch.nn.Module, optional): The AI model to save and upload.
+            model_format (str, optional): Format to save the model ('pt' for PyTorch, 'onnx' for ONNX).
+            storage_backend (str, optional): Storage backend ('huggingface', 'github', 'ndp').
 
         Returns:
-            dict: The server's response as a JSON object.
+            dict: The response from the Patra server.
         """
-        if self.validate():
-            try:
-                self.id = self._get_hash_id(patra_server_url)
-                patra_submit_url = f"{patra_server_url}/upload_mc"
-                headers = {'Content-Type': 'application/json'}
-                response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
-                response.raise_for_status()
-                return response.json()
-            except requests.exceptions.RequestException as e:
-                print("The Patra Server cannot be reached. Please try again.")
-                return None
-        return {"An error occurred: valid patra_server_url not provided. Unable to upload."}
+        if model is not None:
+            temp_dir = tempfile.mkdtemp()
+            model_filename = f"{self.name.replace(' ', '_')}.{model_format}"
+            model_path = os.path.join(temp_dir, model_filename)
+
+            if model_format == "pt":
+                torch.save(model.state_dict(), model_path)
+            elif model_format == "onnx":
+                dummy_input = torch.randn(1, 3, 224, 224)  # Adjust dummy input as needed.
+                torch.onnx.export(model, dummy_input, model_path)
+            else:
+                return {"error": f"Unsupported model format: {model_format}"}
+
+            if storage_backend:
+                backend_credentials = {}
+                if storage_backend.lower() == "huggingface":
+                    hf_username = os.environ.get("HF_HUB_USERNAME")
+                    hf_token = os.environ.get("HF_HUB_TOKEN")
+                    if not hf_username or not hf_token:
+                        return {"error": "Hugging Face credentials not set in environment variables."}
+                    backend_credentials = {"username": hf_username, "token": hf_token}
+                elif storage_backend.lower() == "github":
+                    username = os.environ.get("GITHUB_USERNAME")
+                    token = os.environ.get("GITHUB_TOKEN")
+                    if not username or not token:
+                        return {"error": "GitHub credentials not set in environment variables."}
+                    backend_credentials = {"username": username, "token": token}
+                elif storage_backend.lower() == "ndp":
+                    api_key = os.environ.get("NDP_API_KEY")
+                    if not api_key:
+                        return {"error": "NDP API key not set in environment variables."}
+                    backend_credentials = {"api_key": api_key}
+                else:
+                    return {"error": "Unsupported storage backend specified."}
+
+                backend = get_storage_backend(storage_backend, backend_credentials)
+                try:
+                    upload_result = backend.upload(model_path, {"title": self.name, "version": self.version})
+                    self.model_storage_url = upload_result.get("url", "")
+                except Exception as e:
+                    return {"error": f"Model upload failed: {str(e)}"}
+
+        if not self.validate():
+            return {"error": "Model card validation failed."}
+
+        patra_submit_url = f"{patra_server_url}/upload_mc"
+        headers = {'Content-Type': 'application/json'}
+        try:
+            response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            return {"error": f"Failed to submit model card: {str(e)}"}
 
     def _get_hash_id(self, patra_server_url):
         """
