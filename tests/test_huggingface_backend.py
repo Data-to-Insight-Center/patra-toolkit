@@ -21,7 +21,7 @@ class TestUploadDeleteModelCard(unittest.TestCase):
         """
         cls.hf_username = os.environ.get("HF_HUB_USERNAME")
         cls.hf_token = os.environ.get("HF_HUB_TOKEN")
-        cls.patra_server_url = os.environ.get("PATRA_SERVER_URL")
+        cls.patra_server_url = os.environ.get("PATRA_SERVER_URL", "http://149.165.172.217:5002")
 
         if not cls.hf_username or not cls.hf_token:
             raise unittest.SkipTest("Hugging Face credentials not set in environment variables.")
