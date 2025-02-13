@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 import os.path
 import tempfile
 from dataclasses import dataclass, field
@@ -14,6 +15,10 @@ import torch
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
 from .storage_backend import get_storage_backend
+from .credentials import get_huggingface_credentials, get_github_credentials, get_ndp_credentials
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 
@@ -320,42 +325,44 @@ class ModelCard:
             temp_dir = tempfile.mkdtemp()
             model_filename = f"{self.name.replace(' ', '_')}.{model_format}"
             model_path = os.path.join(temp_dir, model_filename)
-
             if model_format == "pt":
                 torch.save(model.state_dict(), model_path)
             elif model_format == "onnx":
-                dummy_input = torch.randn(1, 3, 224, 224)  # Adjust dummy input as needed.
+                dummy_input = torch.randn(1, 3, 224, 224)
                 torch.onnx.export(model, dummy_input, model_path)
             else:
+                logging.error(f"Unsupported model format: {model_format}")
                 return {"error": f"Unsupported model format: {model_format}"}
 
             if storage_backend:
-                backend_credentials = {}
-                if storage_backend.lower() == "huggingface":
-                    hf_username = os.environ.get("HF_HUB_USERNAME")
-                    hf_token = os.environ.get("HF_HUB_TOKEN")
-                    if not hf_username or not hf_token:
-                        return {"error": "Hugging Face credentials not set in environment variables."}
-                    backend_credentials = {"username": hf_username, "token": hf_token}
-                elif storage_backend.lower() == "github":
-                    username = os.environ.get("GITHUB_USERNAME")
-                    token = os.environ.get("GITHUB_TOKEN")
-                    if not username or not token:
-                        return {"error": "GitHub credentials not set in environment variables."}
-                    backend_credentials = {"username": username, "token": token}
-                elif storage_backend.lower() == "ndp":
-                    api_key = os.environ.get("NDP_API_KEY")
-                    if not api_key:
-                        return {"error": "NDP API key not set in environment variables."}
-                    backend_credentials = {"api_key": api_key}
-                else:
-                    return {"error": "Unsupported storage backend specified."}
+                logging.info(f"Retrieving credentials for {storage_backend} from Patra server...")
+                try:
+                    if storage_backend.lower() == "huggingface":
+                        creds = get_huggingface_credentials(patra_server_url)
+                        backend_credentials = {"username": creds["username"], "token": creds["token"]}
+                    elif storage_backend.lower() == "github":
+                        creds = get_github_credentials(patra_server_url)
+                        backend_credentials = {"username": creds["username"], "token": creds["token"]}
+                    elif storage_backend.lower() == "ndp":
+                        creds = get_ndp_credentials(patra_server_url)
+                        backend_credentials = {"api_key": creds["api_key"]}
+                    else:
+                        return {"error": "Unsupported storage backend specified."}
+
+                    logging.info(f"Successfully retrieved credentials for {storage_backend}.")
+
+                except Exception as e:
+                    return {"error": f"Error retrieving {storage_backend} credentials: {str(e)}"}
 
                 backend = get_storage_backend(storage_backend, backend_credentials)
                 try:
+                    logging.info(f"Uploading model file to {storage_backend}...")
                     upload_result = backend.upload(model_path, {"title": self.name, "version": self.version})
                     self.model_storage_url = upload_result.get("url", "")
+                    logging.info(f"Model successfully uploaded. File URL: {self.model_storage_url}")
+
                 except Exception as e:
+                    logging.error(f"Model upload failed: {e}")
                     return {"error": f"Model upload failed: {str(e)}"}
 
         if not self.validate():
@@ -363,11 +370,14 @@ class ModelCard:
 
         patra_submit_url = f"{patra_server_url}/upload_mc"
         headers = {'Content-Type': 'application/json'}
+        logging.info(f"Submitting model card to {patra_submit_url} ...")
         try:
             response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
             response.raise_for_status()
+            logging.info(f"Model card submitted successfully.")
             return response.json()
         except requests.exceptions.RequestException as e:
+            logging.error(f"Failed to submit model card.")
             return {"error": f"Failed to submit model card: {str(e)}"}
 
     def _get_hash_id(self, patra_server_url):
