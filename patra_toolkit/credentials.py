@@ -22,7 +22,7 @@ def get_huggingface_credentials(patra_server_url: str, timeout: int = 10) -> dic
     response = requests.get(hf_creds_url, headers=headers, timeout=timeout)
     response.raise_for_status()
     creds = response.json()
-    logging.info(f"Successfully received credentials.")
+
     if "username" not in creds or "token" not in creds:
         raise Exception("Invalid Hugging Face credentials response from server.")
     return creds
@@ -46,7 +46,7 @@ def get_github_credentials(patra_server_url: str, timeout: int = 10) -> dict:
     response = requests.get(gh_creds_url, headers=headers, timeout=timeout)
     response.raise_for_status()
     creds = response.json()
-    logging.info(f"Successfully received credentials.")
+
     if "username" not in creds or "token" not in creds:
         raise Exception("Invalid GitHub credentials response from server.")
     return creds
@@ -70,7 +70,7 @@ def get_ndp_credentials(patra_server_url: str, timeout: int = 10) -> dict:
     response = requests.get(ndp_creds_url, headers=headers, timeout=timeout)
     response.raise_for_status()
     creds = response.json()
-    logging.info(f"Successfully received credentials.")
+
     if "api_key" not in creds:
         raise Exception("Invalid NDP credentials response from server.")
     return creds

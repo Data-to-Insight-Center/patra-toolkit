@@ -1,7 +1,7 @@
-if __name__ == '__main__':
+import torchvision.models as models
+from patra_toolkit import ModelCard, AIModel
 
-    import torchvision.models as models
-    from patra_toolkit import ModelCard, AIModel
+if __name__ == '__main__':
 
     # Initialize the Model Card
     mc = ModelCard(
@@ -20,10 +20,6 @@ if __name__ == '__main__':
         foundational_model="None"
     )
 
-    # Define input and output data URLs
-    mc.input_data = 'https://huggingface.co/datasets/cifar10'
-    mc.output_data = 'https://huggingface.co/nkarthikeyan/ResNet50_Image_Classification_Model/blob/main/ResNet50_Image_Classification_Model.pt'
-
     # Initialize AI Model details
     ai_model = AIModel(
         name="ResNet50 Image Classification Model",
@@ -40,9 +36,9 @@ if __name__ == '__main__':
         test_accuracy=0.76
     )
 
-    model = models.resnet50(pretrained=True)
+    resnet50_model = models.resnet50(pretrained=True)
 
-    ai_model.populate_model_structure(model)
+    ai_model.populate_model_structure(resnet50_model)
     mc.ai_model = ai_model
     mc.populate_requirements()
 
@@ -50,4 +46,7 @@ if __name__ == '__main__':
     mc.validate()
 
     # Submit the Model Card
-    mc.submit(patra_server_url="http://10.20.227.55:5002", model=model, storage_backend="huggingface", model_format="pt")
+    mc.submit(patra_server_url="http://10.20.227.55:5002",
+              model=resnet50_model,
+              storage_backend="huggingface",
+              model_format="pt")
