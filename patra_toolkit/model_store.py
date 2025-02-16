@@ -63,7 +63,7 @@ class HuggingFaceStore(ModelStore):
             raise Exception("Invalid Hugging Face credentials response from server.")
         return creds
 
-    def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> Dict[str, str]:
+    def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> str:
         creds = HuggingFaceStore.retrieve_credentials(patra_server_url)
         username, token = creds["username"], creds["token"]
 
