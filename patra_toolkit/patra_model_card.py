@@ -335,7 +335,7 @@ class ModelCard:
                 headers = {'Content-Type': 'application/json'}
                 response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
                 response.raise_for_status()
-                logging.info(f"Model card submitted at {patra_server_url}.")
+                logging.info(response.json())
 
                 if model and model_store:
                     temp_dir = tempfile.mkdtemp()
