@@ -1,6 +1,6 @@
 import os
 import unittest
-import torch
+
 import requests
 from dotenv import load_dotenv
 from huggingface_hub import HfApi

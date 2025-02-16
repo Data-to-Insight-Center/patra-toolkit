@@ -15,3 +15,4 @@ jobs:
           python3 -m unittest tests/test_patra_mc.py
           python3 -m unittest tests/test_patra_inout_data.py
           python3 -m unittest tests/test_patra_hash_id.py
+          python3 -m unittest tests/test_huggingface_backend.py

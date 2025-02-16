@@ -20,7 +20,9 @@ numpy==1.26.4
 packaging==24.2
 pandas==2.2.3
 patra-toolkit==0.1.2
+pillow==11.1.0
 python-dateutil==2.9.0.post0
+python-dotenv==1.0.1
 pytz==2025.1
 PyYAML==6.0.2
 referencing==0.36.2
@@ -34,6 +36,7 @@ slicer==0.0.8
 sympy==1.13.1
 threadpoolctl==3.5.0
 torch==2.6.0
+torchvision==0.21.0
 tqdm==4.67.1
 typing_extensions==4.12.2
 tzdata==2025.1

@@ -15,9 +15,8 @@ import torch
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
 from .storage_backend import get_storage_backend
-from .credentials import get_huggingface_credentials, get_github_credentials, get_ndp_credentials
+from .credentials import get_huggingface_credentials
 
-# Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
@@ -341,11 +340,11 @@ class ModelCard:
                         creds = get_huggingface_credentials(patra_server_url)
                         backend_credentials = {"username": creds["username"], "token": creds["token"]}
                     elif storage_backend.lower() == "github":
-                        creds = get_github_credentials(patra_server_url)
-                        backend_credentials = {"username": creds["username"], "token": creds["token"]}
+                        # TODO: Implement get_github_credentials function to retrieve GitHub credentials
+                        pass
                     elif storage_backend.lower() == "ndp":
-                        creds = get_ndp_credentials(patra_server_url)
-                        backend_credentials = {"api_key": creds["api_key"]}
+                        # TODO: Implement get_ndp_credentials function to retrieve NDP credentials
+                        pass
                     else:
                         return {"error": "Unsupported storage backend specified."}
 
