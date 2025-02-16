@@ -131,7 +131,11 @@ class AIModel:
 @dataclass
 class BiasAnalysis:
     """
-    Stores results from bias analysis.
+    Class to store results from bias analysis.
+
+    Args:
+        demographic_parity_difference (float): The difference in demographic parity between groups.
+        equal_odds_difference (float): The difference in equal odds between groups.
     """
     demographic_parity_difference: float
     equal_odds_difference: float
@@ -140,7 +144,11 @@ class BiasAnalysis:
 @dataclass
 class ExplainabilityAnalysis:
     """
-    Stores explainability metrics.
+    Class to store explainability metrics.
+
+    Args:
+        name (str): Name of the explainability method used.
+        metrics (List[Metric]): List of metrics related to explainability analysis.
     """
     name: str
     metrics: List[Metric] = field(default_factory=list)
@@ -224,7 +232,6 @@ class ModelCard:
     xai_analysis: Optional[ExplainabilityAnalysis] = None
     model_requirements: Optional[List] = None
     id: Optional[str] = field(init=False, default=None)
-    model_storage_url: Optional[str] = field(init=False, default="")
 
     def __str__(self):
         """
@@ -318,7 +325,7 @@ class ModelCard:
             storage_backend (str, optional): Storage backend ('huggingface', 'github', 'ndp').
 
         Returns:
-            dict: The response from the Patra server.
+            dict: The server's response as a JSON object.
         """
         if model is not None:
             temp_dir = tempfile.mkdtemp()
