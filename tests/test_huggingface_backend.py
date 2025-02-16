@@ -52,12 +52,10 @@ class TestHuggingFaceBackend(unittest.TestCase):
             return False
 
     def test_upload(self):
-        self.mc.submit(
-            patra_server_url=self.patra_server_url,
-            model=self.resnet_model,
-            storage_backend="huggingface",
-            model_format="pt"
-        )
+        response = self.mc.submit(patra_server_url=self.patra_server_url,
+                       model=self.resnet_model,
+                       model_format="pt",
+                       model_store="huggingface")
 
         self.assertTrue(self.url_exists(self.location), f"URL does not exist: {self.location}")
 

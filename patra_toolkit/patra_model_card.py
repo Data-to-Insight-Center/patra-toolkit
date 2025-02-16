@@ -14,7 +14,7 @@ import torch
 
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
-from .artifact_storage import get_artifact_storage
+from .model_store import get_model_store
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -313,7 +313,7 @@ class ModelCard:
                patra_server_url: str,
                model: Optional[torch.nn.Module] = None,
                model_format: Optional[str] = "pt",
-               storage_backend: Optional[str] = None) -> dict:
+               model_store: Optional[str] = None) -> dict:
         """
         Submits the model card to the Patra server and uploads the model to an external storage backend.
 
@@ -321,68 +321,51 @@ class ModelCard:
             patra_server_url (str): The Patra server URL.
             model (torch.nn.Module, optional): The AI model to save and upload.
             model_format (str, optional): Format to save the model ('pt' for PyTorch, 'onnx' for ONNX').
-            storage_backend (str, optional): Storage backend ('huggingface', 'github', 'ndp').
+            model_store (str, optional): Storage backend ('huggingface', 'github', 'ndp').
 
         Returns:
             dict: The server's response as a JSON object.
         """
-
-        if model is not None:
-            # Save the model locally before upload
-            temp_dir = tempfile.mkdtemp()
-            model_filename = f"{self.name.replace(' ', '_')}.{model_format}"
-            model_path = os.path.join(temp_dir, model_filename)
-            logging.info(f"Saving model to temporary file: {model_path}")
+        if self.validate():
+            logging.info("Model card validation successful.")
 
             try:
-                if model_format == "pt":
-                    torch.save(model.state_dict(), model_path)
-                elif model_format == "onnx":
-                    dummy_input = torch.randn(1, 3, 224, 224)
-                    torch.onnx.export(model, dummy_input, model_path)
-                else:
-                    logging.error(f"Unsupported model format: {model_format}")
-                    return {"error": f"Unsupported model format: {model_format}"}
-            except Exception as e:
-                logging.error(f"Error saving model: {e}")
-                return {"error": f"Error saving model: {str(e)}"}
+                self.id = self._get_hash_id(patra_server_url)
+                patra_submit_url = f"{patra_server_url}/upload_mc"
+                headers = {'Content-Type': 'application/json'}
+                response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
+                response.raise_for_status()
+                logging.info(f"Model card submitted at {patra_server_url}.")
 
-            # Retrieve credentials and upload to selected storage backend
-            if storage_backend:
-                storage_backend = storage_backend.lower()
-                logging.info(f"Retrieving credentials for {storage_backend} from Patra server...")
+                if model and model_store:
+                    temp_dir = tempfile.mkdtemp()
+                    model_filename = f"{self.name.replace(' ', '_')}.{model_format}"
+                    model_path = os.path.join(temp_dir, model_filename)
 
-                try:
-                    backend = get_artifact_storage(storage_backend)
+                    try:
+                        if model_format == "pt":
+                            torch.save(model.state_dict(), model_path)
+                        else:
+                            logging.error(f"Unsupported model format: {model_format}")
+                    except Exception as e:
+                        logging.error(f"Error saving model: {e}")
 
-                    location = backend.upload(model_path,
-                                              {"title": self.name, "version": self.version},
-                                              patra_server_url)
-                    logging.info(f"Model successfully uploaded at {location}")
+                    try:
+                        backend = get_model_store(model_store.lower())
+                        logging.info(f"Uploading model to {model_store}...")
+                        location = backend.upload(model_path,
+                                                  {"title": self.name, "version": self.version},
+                                                  patra_server_url)
+                        logging.info(f"Model uploaded at {location}")
+                    except Exception as e:
+                        logging.error(f"Error during {model_store} upload: {e}")
 
-                except Exception as e:
-                    logging.error(f"Error during {storage_backend} upload: {e}")
-                    return {"error": f"Error during {storage_backend} upload: {str(e)}"}
+                return response.json()
 
-        # Validate model card before submission
-        if not self.validate():
-            logging.error("Model card validation failed.")
-            return {"error": "Model card validation failed."}
+            except requests.exceptions.RequestException as e:
+                logging.error(f"Error submitting model card: {e}")
+                return {"error": f"Error submitting model card: {str(e)}"}
 
-        # Submit the model card to the Patra server
-        patra_submit_url = f"{patra_server_url}/upload_mc"
-        headers = {'Content-Type': 'application/json'}
-        logging.info(f"Submitting model card to {patra_submit_url} ...")
-
-        try:
-            response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
-            response.raise_for_status()
-            result = response.json()
-            logging.info(f"Model card submitted successfully. Server response: {result}")
-            return result
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Failed to submit model card: {e}")
-            return {"error": f"Failed to submit model card: {str(e)}"}
 
     def _get_hash_id(self, patra_server_url):
         """

@@ -6,8 +6,8 @@ import requests
 from huggingface_hub import create_repo, upload_file
 
 
-# --- Abstract Base Class: ArtifactStorage ---
-class ArtifactStorage(ABC):
+# --- Abstract Base Class: ModelStore ---
+class ModelStore(ABC):
     """
     Abstract class for artifact storage backends.
     """
@@ -46,10 +46,10 @@ class ArtifactStorage(ABC):
         pass
 
 
-# --- HuggingFaceStorage Implementation ---
-class HuggingFaceStorage(ArtifactStorage):
+# --- HuggingFaceStore Implementation ---
+class HuggingFaceStore(ModelStore):
     """
-    Handles model storage on Hugging Face.
+    Handles model Store on Hugging Face.
     """
 
     @classmethod
@@ -64,7 +64,7 @@ class HuggingFaceStorage(ArtifactStorage):
         return creds
 
     def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> Dict[str, str]:
-        creds = HuggingFaceStorage.retrieve_credentials(patra_server_url)
+        creds = HuggingFaceStore.retrieve_credentials(patra_server_url)
         username, token = creds["username"], creds["token"]
 
         repo_id = f"{username}/{metadata['title'].replace(' ', '_')}"
@@ -82,10 +82,10 @@ class HuggingFaceStorage(ArtifactStorage):
         return f"https://huggingface.co/{repo_id}/blob/main/{filename}"
 
 
-# --- GitHubStorage Implementation ---
-class GitHubStorage(ArtifactStorage):
+# --- GitHubStore Implementation ---
+class GitHubStore(ModelStore):
     """
-    Handles model storage on GitHub.
+    Handles model Store on GitHub.
     """
 
     @classmethod
@@ -93,19 +93,19 @@ class GitHubStorage(ArtifactStorage):
         """
         Retrieves GitHub credentials from the Patra server.
         """
-        raise NotImplementedError("GitHubStorage.retrieve_credentials() is not implemented yet.")
+        raise NotImplementedError("GitHubStore.retrieve_credentials() is not implemented yet.")
 
     def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> Dict[str, str]:
         """
         Uploads the model file to GitHub.
         """
-        raise NotImplementedError("GitHubStorage.upload() is not implemented yet.")
+        raise NotImplementedError("GitHubStore.upload() is not implemented yet.")
 
 
-# --- NDPStorage Implementation ---
-class NDPStorage(ArtifactStorage):
+# --- NDPStore Implementation ---
+class NDPStore(ModelStore):
     """
-    Handles model storage on National Data Platform (NDP).
+    Handles model Store on National Data Platform (NDP).
     """
 
     @classmethod
@@ -113,32 +113,32 @@ class NDPStorage(ArtifactStorage):
         """
         Retrieves NDP credentials from the Patra server.
         """
-        raise NotImplementedError("NDPStorage.retrieve_credentials() is not implemented yet.")
+        raise NotImplementedError("NDPStore.retrieve_credentials() is not implemented yet.")
 
     def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> Dict[str, str]:
         """
         Uploads the model file to NDP.
         """
-        raise NotImplementedError("NDPStorage.upload() is not implemented yet.")
+        raise NotImplementedError("NDPStore.upload() is not implemented yet.")
 
 
-# --- Factory to Select Storage Backend ---
-def get_artifact_storage(storage_type: str) -> ArtifactStorage:
+# --- Factory to Select Store Backend ---
+def get_model_store(store_name: str) -> ModelStore:
     """
-    Factory function to return the appropriate storage backend.
+    Factory function to return the appropriate Store backend.
 
     Args:
-        storage_type (str): The type of storage backend ("huggingface", "github", "ndp").
+        store_name (str): The storage name ("huggingface", "github", "ndp").
 
     Returns:
-        ArtifactStorage: An instance of the requested storage backend.
+        ModelStore: An instance of the requested Store backend.
     """
-    storage_type = storage_type.lower()
-    if storage_type == "huggingface":
-        return HuggingFaceStorage()
-    elif storage_type == "github":
-        return GitHubStorage()
-    elif storage_type == "ndp":
-        return NDPStorage()
+    store_name = store_name.lower()
+    if store_name == "huggingface":
+        return HuggingFaceStore()
+    elif store_name == "github":
+        return GitHubStore()
+    elif store_name == "ndp":
+        return NDPStore()
     else:
-        raise ValueError(f"Unsupported storage backend: {storage_type}")
+        raise ValueError(f"Unsupported storage backend: {store_name}")
