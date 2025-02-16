@@ -14,8 +14,7 @@ import torch
 
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
-from .storage_backend import get_storage_backend
-from .credentials import get_huggingface_credentials
+from .artifact_storage import get_artifact_storage
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -242,7 +241,8 @@ class ModelCard:
         """
         return json.dumps(self.__dict__, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
 
-    def populate_bias(self, dataset, true_labels, predicted_labels, sensitive_feature_name, sensitive_feature_data, model):
+    def populate_bias(self, dataset, true_labels, predicted_labels, sensitive_feature_name, sensitive_feature_data,
+                      model):
         """
         Calculates and stores fairness metrics.
 
@@ -315,75 +315,73 @@ class ModelCard:
                model_format: Optional[str] = "pt",
                storage_backend: Optional[str] = None) -> dict:
         """
-        Submits the model card to the Patra server and, optionally, saves and uploads the model
-        to an external storage backend.
+        Submits the model card to the Patra server and uploads the model to an external storage backend.
 
         Args:
             patra_server_url (str): The Patra server URL.
             model (torch.nn.Module, optional): The AI model to save and upload.
-            model_format (str, optional): Format to save the model ('pt' for PyTorch, 'onnx' for ONNX).
+            model_format (str, optional): Format to save the model ('pt' for PyTorch, 'onnx' for ONNX').
             storage_backend (str, optional): Storage backend ('huggingface', 'github', 'ndp').
 
         Returns:
             dict: The server's response as a JSON object.
         """
+
         if model is not None:
+            # Save the model locally before upload
             temp_dir = tempfile.mkdtemp()
             model_filename = f"{self.name.replace(' ', '_')}.{model_format}"
             model_path = os.path.join(temp_dir, model_filename)
-            if model_format == "pt":
-                torch.save(model.state_dict(), model_path)
-            elif model_format == "onnx":
-                dummy_input = torch.randn(1, 3, 224, 224)
-                torch.onnx.export(model, dummy_input, model_path)
-            else:
-                logging.error(f"Unsupported model format: {model_format}")
-                return {"error": f"Unsupported model format: {model_format}"}
+            logging.info(f"Saving model to temporary file: {model_path}")
 
+            try:
+                if model_format == "pt":
+                    torch.save(model.state_dict(), model_path)
+                elif model_format == "onnx":
+                    dummy_input = torch.randn(1, 3, 224, 224)
+                    torch.onnx.export(model, dummy_input, model_path)
+                else:
+                    logging.error(f"Unsupported model format: {model_format}")
+                    return {"error": f"Unsupported model format: {model_format}"}
+            except Exception as e:
+                logging.error(f"Error saving model: {e}")
+                return {"error": f"Error saving model: {str(e)}"}
+
+            # Retrieve credentials and upload to selected storage backend
             if storage_backend:
+                storage_backend = storage_backend.lower()
                 logging.info(f"Retrieving credentials for {storage_backend} from Patra server...")
-                try:
-                    if storage_backend.lower() == "huggingface":
-                        creds = get_huggingface_credentials(patra_server_url)
-                        backend_credentials = {"username": creds["username"], "token": creds["token"]}
-                    elif storage_backend.lower() == "github":
-                        # TODO: Implement get_github_credentials function to retrieve GitHub credentials
-                        pass
-                    elif storage_backend.lower() == "ndp":
-                        # TODO: Implement get_ndp_credentials function to retrieve NDP credentials
-                        pass
-                    else:
-                        return {"error": "Unsupported storage backend specified."}
 
-                    logging.info(f"Successfully retrieved credentials for {storage_backend}.")
+                try:
+                    backend = get_artifact_storage(storage_backend)
+
+                    location = backend.upload(model_path,
+                                              {"title": self.name, "version": self.version},
+                                              patra_server_url)
+                    logging.info(f"Model successfully uploaded at {location}")
 
                 except Exception as e:
-                    return {"error": f"Error retrieving {storage_backend} credentials: {str(e)}"}
+                    logging.error(f"Error during {storage_backend} upload: {e}")
+                    return {"error": f"Error during {storage_backend} upload: {str(e)}"}
 
-                backend = get_storage_backend(storage_backend, backend_credentials)
-                try:
-                    logging.info(f"Uploading model file to {storage_backend}...")
-                    upload_result = backend.upload(model_path, {"title": self.name, "version": self.version})
-                    self.model_storage_url = upload_result.get("url", "")
-                    logging.info(f"Model successfully uploaded. File URL: {self.model_storage_url}")
-
-                except Exception as e:
-                    logging.error(f"Model upload failed: {e}")
-                    return {"error": f"Model upload failed: {str(e)}"}
-
+        # Validate model card before submission
         if not self.validate():
+            logging.error("Model card validation failed.")
             return {"error": "Model card validation failed."}
 
+        # Submit the model card to the Patra server
         patra_submit_url = f"{patra_server_url}/upload_mc"
         headers = {'Content-Type': 'application/json'}
         logging.info(f"Submitting model card to {patra_submit_url} ...")
+
         try:
             response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
             response.raise_for_status()
-            logging.info(f"Model card submitted successfully.")
-            return response.json()
+            result = response.json()
+            logging.info(f"Model card submitted successfully. Server response: {result}")
+            return result
         except requests.exceptions.RequestException as e:
-            logging.error(f"Failed to submit model card.")
+            logging.error(f"Failed to submit model card: {e}")
             return {"error": f"Failed to submit model card: {str(e)}"}
 
     def _get_hash_id(self, patra_server_url):
