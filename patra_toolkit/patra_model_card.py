@@ -332,7 +332,7 @@ class ModelCard:
             patra_server_url (str): The Patra server URL used to generate the ID.
 
         Returns:
-            str: A unique hash identifier for the model card.
+            str: A unique identifier for the model card.
         """
         combined_string = f"{self.author}_{self.name}_{self.version}"
         try:
