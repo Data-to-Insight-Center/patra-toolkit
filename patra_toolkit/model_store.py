@@ -1,12 +1,10 @@
-import os
 from abc import ABC, abstractmethod
 from typing import Dict
-
+import os
 import requests
 from huggingface_hub import create_repo, upload_file
 
 
-# --- Abstract Base Class: ModelStore ---
 class ModelStore(ABC):
     """
     Abstract class for artifact storage backends.
@@ -37,7 +35,7 @@ class ModelStore(ABC):
 
         Args:
             file_path (str): Path to the file to upload.
-            metadata (dict): Metadata containing the model name and version.
+            metadata (dict): Metadata containing the model name (title) and version.
             patra_server_url (str): URL of the Patra server.
 
         Returns:
@@ -46,10 +44,9 @@ class ModelStore(ABC):
         pass
 
 
-# --- HuggingFaceStore Implementation ---
 class HuggingFaceStore(ModelStore):
     """
-    Handles model Store on Hugging Face.
+    Handles model storage on Hugging Face.
     """
 
     @classmethod
@@ -64,10 +61,26 @@ class HuggingFaceStore(ModelStore):
         return creds
 
     def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> str:
-        creds = HuggingFaceStore.retrieve_credentials(patra_server_url)
-        username, token = creds["username"], creds["token"]
+        """
+        Uploads the model file to Hugging Face.
 
-        repo_id = f"{username}/{metadata['title'].replace(' ', '_')}"
+        Repository name is generated as:
+          f"{owner}/{model_title}-v{model_version}"
+        where `owner` is retrieved from the credentials.
+
+        Args:
+            file_path (str): Local path to the file to upload.
+            metadata (dict): Must contain keys "title" and "version".
+            patra_server_url (str): URL of the Patra server for credential retrieval.
+
+        Returns:
+            str: URL of the uploaded file.
+        """
+        creds = HuggingFaceStore.retrieve_credentials(patra_server_url)
+        owner, token = creds["username"], creds["token"]
+
+        # Generate repository name using the provided metadata.
+        repo_id = f"{owner}/{metadata['title'].replace(' ', '_')}-v{metadata['version']}"
         create_repo(repo_id=repo_id, private=False, exist_ok=True, token=token)
 
         filename = os.path.basename(file_path)
@@ -82,63 +95,51 @@ class HuggingFaceStore(ModelStore):
         return f"https://huggingface.co/{repo_id}/blob/main/{filename}"
 
 
-# --- GitHubStore Implementation ---
 class GitHubStore(ModelStore):
     """
-    Handles model Store on GitHub.
+    Handles model storage on GitHub.
     """
 
     @classmethod
     def retrieve_credentials(cls, patra_server_url: str, timeout: int = 10) -> Dict[str, str]:
-        """
-        Retrieves GitHub credentials from the Patra server.
-        """
         raise NotImplementedError("GitHubStore.retrieve_credentials() is not implemented yet.")
 
-    def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> Dict[str, str]:
-        """
-        Uploads the model file to GitHub.
-        """
+    def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> str:
         raise NotImplementedError("GitHubStore.upload() is not implemented yet.")
 
 
-# --- NDPStore Implementation ---
 class NDPStore(ModelStore):
     """
-    Handles model Store on National Data Platform (NDP).
+    Handles model storage on National Data Platform (NDP).
     """
 
     @classmethod
     def retrieve_credentials(cls, patra_server_url: str, timeout: int = 10) -> Dict[str, str]:
-        """
-        Retrieves NDP credentials from the Patra server.
-        """
         raise NotImplementedError("NDPStore.retrieve_credentials() is not implemented yet.")
 
-    def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> Dict[str, str]:
-        """
-        Uploads the model file to NDP.
-        """
+    def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> str:
         raise NotImplementedError("NDPStore.upload() is not implemented yet.")
 
 
-# --- Factory to Select Store Backend ---
-def get_model_store(store_name: str) -> ModelStore:
+def get_model_store(storage_type: str) -> ModelStore:
     """
-    Factory function to return the appropriate Store backend.
+    Factory function to return the appropriate model storage backend.
 
     Args:
-        store_name (str): The storage name ("huggingface", "github", "ndp").
+        storage_type (str): The type of storage backend ("huggingface", "github", "ndp").
 
     Returns:
-        ModelStore: An instance of the requested Store backend.
+        ModelStore: An instance of the requested storage backend.
+
+    Raises:
+        ValueError: If the storage backend type is unsupported.
     """
-    store_name = store_name.lower()
-    if store_name == "huggingface":
+    storage_type = storage_type.lower()
+    if storage_type == "huggingface":
         return HuggingFaceStore()
-    elif store_name == "github":
+    elif storage_type == "github":
         return GitHubStore()
-    elif store_name == "ndp":
+    elif storage_type == "ndp":
         return NDPStore()
     else:
-        raise ValueError(f"Unsupported storage backend: {store_name}")
+        raise ValueError(f"Unsupported storage backend: {storage_type}")

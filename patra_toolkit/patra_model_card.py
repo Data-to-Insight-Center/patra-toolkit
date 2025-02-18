@@ -338,11 +338,13 @@ class ModelCard:
                 logging.info(response.json())
 
                 if model and model_store:
+                    # Save the model to a temporary directory
                     temp_dir = tempfile.mkdtemp()
                     model_filename = f"{self.name.replace(' ', '_')}.{model_format}"
                     model_path = os.path.join(temp_dir, model_filename)
 
                     try:
+                        # TODO: Add support for other model formats
                         if model_format == "pt":
                             torch.save(model.state_dict(), model_path)
                         else:
@@ -351,6 +353,7 @@ class ModelCard:
                         logging.error(f"Error saving model: {e}")
 
                     try:
+                        # Upload the model to the specified model store
                         backend = get_model_store(model_store.lower())
                         logging.info(f"Uploading model to {model_store}...")
                         location = backend.upload(model_path,
