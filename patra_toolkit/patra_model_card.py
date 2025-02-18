@@ -5,7 +5,7 @@ import os.path
 import tempfile
 from dataclasses import dataclass, field
 from json import JSONEncoder
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 import jsonschema
 import pkg_resources
@@ -313,7 +313,7 @@ class ModelCard:
                patra_server_url: str,
                model: Optional[torch.nn.Module] = None,
                model_format: Optional[str] = "pt",
-               model_store: Optional[str] = None) -> dict:
+               model_store: Optional[str] = None) -> Any | None:
         """
         Submits the model card to the Patra server and uploads the model to an external storage backend.
 
@@ -367,7 +367,7 @@ class ModelCard:
 
             except requests.exceptions.RequestException as e:
                 logging.error(f"Error submitting model card: {e}")
-                return {"error": f"Error submitting model card: {str(e)}"}
+                return None
 
 
     def _get_hash_id(self, patra_server_url):

@@ -9,6 +9,23 @@ from patra_toolkit import ModelCard, AIModel
 load_dotenv()
 
 
+def url_exists(url: str) -> bool:
+    """
+    Checks if a URL exists.
+
+    Args:
+        url (str): URL to check.
+
+    Returns:
+        bool: True if the URL exists, False otherwise.
+    """
+    try:
+        response = requests.head(url, allow_redirects=True, timeout=10)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+
 class TestHuggingFaceStore(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -42,20 +59,14 @@ class TestHuggingFaceStore(unittest.TestCase):
             test_accuracy=0.76
         )
 
-    def url_exists(self, url: str) -> bool:
-        try:
-            response = requests.head(url, allow_redirects=True, timeout=10)
-            return response.status_code == 200
-        except Exception:
-            return False
-
     def test_upload(self):
-        response = self.mc.submit(patra_server_url=self.patra_server_url,
-                                  model=models.resnet50(pretrained=True),
-                                  model_format="pt",
-                                  model_store="huggingface")
+        submit_response = self.mc.submit(patra_server_url=self.patra_server_url,
+                                         model=models.resnet50(pretrained=True),
+                                         model_format="pt",
+                                         model_store="huggingface")
 
-        self.assertTrue(self.url_exists(self.location), f"URL does not exist: {self.location}")
+        self.assertIsNotNone(submit_response, "Model Card submission failed.")
+        self.assertTrue(url_exists(self.location), f"URL does not exist: {self.location}")
 
         try:
             self.api.delete_repo(repo_id=self.repo_id, token=self.hf_token)
