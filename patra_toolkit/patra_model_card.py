@@ -334,7 +334,7 @@ class ModelCard:
         Returns:
             str: A unique hash identifier for the model card.
         """
-        combined_string = f"{self.name}:{self.version}:{self.author}"
+        combined_string = f"{self.author}_{self.name}_{self.version}"
         try:
             if patra_server_url:
                 patra_hash_url = f"{patra_server_url}/get_hash_id"
@@ -343,10 +343,10 @@ class ModelCard:
                 response.raise_for_status()
                 return response.json()
             else:
-                return hashlib.sha256(combined_string.encode()).hexdigest()
+                return combined_string
         except requests.exceptions.RequestException as e:
             print("Could not connect to the Patra Server, generating the ID locally")
-            return hashlib.sha256(combined_string.encode()).hexdigest()
+            return combined_string
 
     def save(self, file_location):
         """
