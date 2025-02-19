@@ -313,7 +313,10 @@ class ModelCard:
         """
         if self.validate():
             try:
-                self.id = self._get_hash_id(patra_server_url)
+                id_response = self._get_hash_id(patra_server_url)
+                if isinstance(id_response, dict) and "error" in id_response:
+                    raise ValueError(f"Failed to retrieve hash ID: {id_response['error']}")
+                self.id = id_response
                 patra_submit_url = f"{patra_server_url}/upload_mc"
                 headers = {'Content-Type': 'application/json'}
                 response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
@@ -334,19 +337,17 @@ class ModelCard:
         Returns:
             str: A unique identifier for the model card.
         """
-        combined_string = f"{self.author}_{self.name}_{self.version}"
         try:
             if patra_server_url:
                 patra_hash_url = f"{patra_server_url}/get_hash_id"
                 headers = {'Content-Type': 'application/json'}
-                response = requests.get(patra_hash_url, params={"combined_string": combined_string}, headers=headers)
+                response = requests.get(patra_hash_url,
+                                        params={"author": self.author, "name": self.name, "version": self.version},
+                                        headers=headers)
                 response.raise_for_status()
                 return response.json()
-            else:
-                return combined_string
         except requests.exceptions.RequestException as e:
-            print("Could not connect to the Patra Server, generating the ID locally")
-            return combined_string
+            return {"error": f"An unexpected error occurred: {str(e)}"}
 
     def save(self, file_location):
         """
