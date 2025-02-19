@@ -313,15 +313,15 @@ class ModelCard:
         """
         if self.validate():
             try:
-                id_response = self._get_hash_id(patra_server_url)
-                if isinstance(id_response, dict) and "error" in id_response:
-                    raise ValueError(f"Failed to retrieve hash ID: {id_response['error']}")
-                self.id = id_response
+                self.id = self._get_hash_id(patra_server_url)
+
                 patra_submit_url = f"{patra_server_url}/upload_mc"
                 headers = {'Content-Type': 'application/json'}
                 response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
                 response.raise_for_status()
                 return response.json()
+            except ValueError as e:
+                return {"error": str(e)}
             except requests.exceptions.RequestException as e:
                 print("The Patra Server cannot be reached. Please try again.")
                 return None
@@ -346,8 +346,14 @@ class ModelCard:
                                         headers=headers)
                 response.raise_for_status()
                 return response.json()
+        except requests.exceptions.HTTPError as http_err:
+            raise ValueError(f"HTTP error: {response.status_code} - {response.reason}")
+        except requests.exceptions.ConnectionError:
+            raise ValueError("Failed to connect to the Patra Server. Check the server URL or network connection.")
+        except requests.exceptions.Timeout:
+            raise ValueError("Request to the Patra Server timed out. Please try again later.")
         except requests.exceptions.RequestException as e:
-            return {"error": f"An unexpected error occurred: {str(e)}"}
+            raise ValueError(f"An unexpected error occurred: {str(e)}")
 
     def save(self, file_location):
         """

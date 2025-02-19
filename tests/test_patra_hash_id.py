@@ -33,7 +33,7 @@ class ModelCardTestCase2(unittest.TestCase):
     def test_get_hash_id_success(self, mock_get):
         """Test that id is set correctly when server responds successfully."""
         mock_get.return_value = MagicMock(status_code=200)
-        mock_get.return_value.json.return_value = {"id": "icicle-camera-traps_0.1_joe"}
+        mock_get.return_value.json.return_value = {"id": "joe_icicle-camera-traps_0.1"}
 
         model_card = ModelCard(
             name="icicle-camera-traps",
@@ -52,13 +52,13 @@ class ModelCardTestCase2(unittest.TestCase):
         )
 
         model_card.id = model_card._get_hash_id("http://127.0.0.1:5002")
-        self.assertEqual(model_card.id, {"id": "icicle-camera-traps_0.1_joe"})
+        self.assertEqual(model_card.id, {"id": "joe_icicle-camera-traps_0.1"})
         print("Success case id:", model_card.id)
 
     @patch('requests.get')
     def test_get_hash_id_server_down(self, mock_get):
         """Test ID generation when server is down."""
-        mock_get.side_effect = requests.exceptions.RequestException("Server is down")
+        mock_get.side_effect = requests.exceptions.RequestException("Failed to connect to the Patra Server. Please check the server URL or network connection.")
 
         model_card = ModelCard(
             name="icicle-camera-traps",
@@ -77,7 +77,7 @@ class ModelCardTestCase2(unittest.TestCase):
         )
         model_card.id = model_card._get_hash_id("http://127.0.0.1:5002")
 
-        self.assertEqual(model_card.id, {"error": "An unexpected error occurred: Server is down"})
+        self.assertEqual(model_card.id, {"error": "An unexpected error occurred: Failed to connect to the Patra Server. Please check the server URL or network connection."})
         print("Server down case id:", model_card.id)
 
 if __name__ == '__main__':
