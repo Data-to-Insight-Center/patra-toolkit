@@ -321,7 +321,7 @@ class ModelCard:
                 response.raise_for_status()
                 return response.json()
             except ValueError as e:
-                return {"error": str(e)}
+                raise
             except requests.exceptions.RequestException as e:
                 print("The Patra Server cannot be reached. Please try again.")
                 return None
