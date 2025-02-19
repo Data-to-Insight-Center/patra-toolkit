@@ -57,8 +57,10 @@ class ModelCardTestCase2(unittest.TestCase):
 
     @patch('requests.get')
     def test_get_hash_id_server_down(self, mock_get):
-        """Test ID generation when server is down."""
-        mock_get.side_effect = requests.exceptions.RequestException("Failed to connect to the Patra Server. Please check the server URL or network connection.")
+        """Test ID generation when the server is down."""
+        mock_get.side_effect = requests.exceptions.RequestException(
+            "Failed to connect to the Patra Server. Please check the server URL or network connection."
+        )
 
         model_card = ModelCard(
             name="icicle-camera-traps",
@@ -75,10 +77,14 @@ class ModelCardTestCase2(unittest.TestCase):
             bias_analysis=self.bias_analysis,
             xai_analysis=self.xai_analysis
         )
-        model_card.id = model_card._get_hash_id("http://127.0.0.1:5002")
 
-        self.assertEqual(model_card.id, {"error": "An unexpected error occurred: Failed to connect to the Patra Server. Please check the server URL or network connection."})
-        print("Server down case id:", model_card.id)
+        with self.assertRaises(ValueError) as context:
+            model_card.id = model_card._get_hash_id("http://127.0.0.1:5002")
+
+        self.assertEqual(str(context.exception),
+                         "An unexpected error occurred: Failed to connect to the Patra Server. Please check the server URL or network connection.")
+
+        print("Server down case id: ValueError raised correctly.")
 
 if __name__ == '__main__':
         unittest.main()
