@@ -328,9 +328,9 @@ class ModelCard:
         """
         model_location = None
         try:
-            # if not self.validate():
-            #     raise Exception("Model card validation failed.")
-            # logging.info("Model card validation successful.")
+            if not self.validate():
+                raise Exception("Model card validation failed.")
+            logging.info("Model card validation successful.")
 
             # Generate PID that will be used as the repository name.
             self.pid = self._get_pid(patra_server_url)
