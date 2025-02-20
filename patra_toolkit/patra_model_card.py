@@ -321,10 +321,7 @@ class ModelCard:
                 response.raise_for_status()
                 return response.json()
             except ValueError as e:
-                raise
-            except requests.exceptions.RequestException as e:
-                print("The Patra Server cannot be reached. Please try again.")
-                return None
+                raise e
         return {"An error occurred: valid patra_server_url not provided. Unable to upload."}
 
     def _get_hash_id(self, patra_server_url):
