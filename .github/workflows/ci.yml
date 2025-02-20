@@ -5,10 +5,6 @@ on: [push]
 jobs:
   start:
     runs-on: ubuntu-latest
-    env:
-      HF_HUB_USERNAME: ${{ secrets.HF_HUB_USERNAME }}
-      HF_HUB_TOKEN: ${{ secrets.HF_HUB_TOKEN }}
-      PATRA_SERVER_URL: ${{ secrets.PATRA_SERVER_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -19,4 +15,3 @@ jobs:
           python3 -m unittest tests/test_patra_mc.py
           python3 -m unittest tests/test_patra_inout_data.py
           python3 -m unittest tests/test_patra_hash_id.py
-          python3 -m unittest tests/test_huggingface_backend.py

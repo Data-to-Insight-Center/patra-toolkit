@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict
 import os
 import requests
-from huggingface_hub import create_repo, upload_file
+from huggingface_hub import create_repo, upload_file, HfApi
 
 
 class ModelStore(ABC):
@@ -40,6 +40,17 @@ class ModelStore(ABC):
 
         Returns:
             str: URL of the uploaded file.
+        """
+        pass
+
+    @abstractmethod
+    def delete_repo(self, pid: str, patra_server_url: str) -> None:
+        """
+        Deletes the repository associated with the given persistent identifier (PID).
+
+        Args:
+            pid (str): Persistent identifier for the model card.
+            patra_server_url (str): URL of the Patra server for credential retrieval.
         """
         pass
 
@@ -89,6 +100,24 @@ class HuggingFaceStore(ModelStore):
         )
 
         return f"https://huggingface.co/{repo_id}/blob/main/{filename}"
+
+    def delete_repo(self, pid: str, patra_server_url: str) -> None:
+        """
+        Deletes the repository associated with the given persistent identifier (PID).
+
+        Args:
+            pid (str): Persistent identifier for the model card.
+            patra_server_url (str): URL of the Patra server for credential retrieval.
+
+        Raises:
+            Exception: If the repository deletion fails.
+        """
+        creds = HuggingFaceStore.retrieve_credentials(patra_server_url)
+        owner, token = creds["username"], creds["token"]
+
+        repo_id = f"{owner}/{pid.replace(' ', '_')}"
+        api = HfApi()
+        api.delete_repo(repo_id=repo_id, token=token)
 
 
 class GitHubStore(ModelStore):

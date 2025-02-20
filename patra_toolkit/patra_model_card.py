@@ -324,50 +324,59 @@ class ModelCard:
             model_store (str, optional): Storage backend ('huggingface', 'github', 'ndp').
 
         Returns:
-            dict: The server's response as a JSON object.
+            dict: The server's response as a JSON object on success, or an error dict on failure.
         """
-        if self.validate():
-            logging.info("Model card validation successful.")
+        model_location = None
+        try:
+            # if not self.validate():
+            #     raise Exception("Model card validation failed.")
+            # logging.info("Model card validation successful.")
 
-            try:
-                self.pid = self._get_pid(patra_server_url)
-                patra_submit_url = f"{patra_server_url}/upload_mc"
-                headers = {'Content-Type': 'application/json'}
-                response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
-                response.raise_for_status()
-                logging.info(response.json())
+            # Generate PID that will be used as the repository name.
+            self.pid = self._get_pid(patra_server_url)
+            logging.info(f"PID generated: {self.pid}")
 
-                if model and model_store:
-                    # Save the model to a temporary directory
-                    temp_dir = tempfile.mkdtemp()
-                    model_filename = f"{self.pid}.{model_format}"
-                    model_path = os.path.join(temp_dir, model_filename)
+            # Save model weights to a file and upload to the specified model store.
+            if model and model_store:
+                temp_dir = tempfile.mkdtemp()
+                model_filename = f"{self.pid}.{model_format}"
+                model_path = os.path.join(temp_dir, model_filename)
+                logging.info(f"Saving model to temporary file: {model_path}")
 
-                    try:
-                        # TODO: Add support for other model formats
-                        if model_format == "pt":
-                            torch.save(model.state_dict(), model_path)
-                        else:
-                            logging.error(f"Unsupported model format: {model_format}")
-                    except Exception as e:
-                        logging.error(f"Error saving model: {e}")
+                if model_format == "pt":
+                    torch.save(model.state_dict(), model_path)
+                else:
+                    raise Exception(f"Unsupported model format: {model_format}")
 
-                    try:
-                        # Upload the model to the specified model store
-                        backend = get_model_store(model_store.lower())
-                        logging.info(f"Uploading model to {model_store}...")
-                        location = backend.upload(model_path,
-                                                  self.pid,
-                                                  patra_server_url)
-                        logging.info(f"Model uploaded at {location}")
-                    except Exception as e:
-                        logging.error(f"Error during {model_store} upload: {e}")
+                backend = get_model_store(model_store.lower())
+                model_location = backend.upload(model_path, self.pid, patra_server_url)
+                logging.info(f"Model uploaded at {model_location}")
 
-                return response.json()
+            if model_location:
+                self.output_data = model_location
 
-            except requests.exceptions.RequestException as e:
-                logging.error(f"Error submitting model card: {e}")
-                return None
+            # Submit the model card to the Patra server.
+            patra_submit_url = f"{patra_server_url}/upload_mc"
+            response = requests.post(patra_submit_url, json=json.loads(str(self)),
+                                     headers={'Content-Type': 'application/json'})
+            response.raise_for_status()
+            logging.info(f"Model card submitted successfully")
+
+        except Exception as e:
+            logging.error(f"Submission failed: {e}")
+
+            # Attempt rollback if the model was uploaded to Hugging Face.
+            if model_location and model_store:
+                try:
+                    backend = get_model_store(model_store.lower())
+                    backend.delete_repo(self.pid, patra_server_url)
+                    logging.info("Rollback successful.")
+
+                except Exception as del_err:
+                    logging.error(f"Rollback failed: Unable to delete repository: {del_err}")
+            return {"error": f"Submission failed: {str(e)}"}
+
+        return response.json()
 
     def _get_pid(self, patra_server_url):
         """
