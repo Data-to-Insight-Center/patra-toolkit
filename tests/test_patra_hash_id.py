@@ -52,9 +52,9 @@ class ModelCardTestCase2(unittest.TestCase):
             xai_analysis=self.xai_analysis
         )
 
-        model_card.id = model_card._get_hash_id("http://127.0.0.1:5002")
-        self.assertEqual(model_card.id, "e6c22bdf9fd3c164a2a9a083fb56fca9328f6ca30f7dcd2ebfc140a7d6f02149")
-        print("Success case id:", model_card.id)
+        model_card.pid = model_card._get_pid("http://127.0.0.1:5002")
+        self.assertEqual(model_card.pid, "e6c22bdf9fd3c164a2a9a083fb56fca9328f6ca30f7dcd2ebfc140a7d6f02149")
+        print("Success case id:", model_card.pid)
 
     @patch('requests.get')
     def test_get_hash_id_server_down(self, mock_get):
@@ -104,13 +104,13 @@ class ModelCardTestCase2(unittest.TestCase):
             xai_analysis=self.xai_analysis
         )
 
-        model_card.id = model_card._get_hash_id(None)
+        model_card.pid = model_card._get_pid(None)
         # Generate the expected hash value
         combined_string = f"{model_card.name}:{model_card.version}:{model_card.author}"
         expected_hash = hashlib.sha256(combined_string.encode()).hexdigest()
 
-        self.assertEqual(model_card.id, expected_hash)
-        print("Generated hash id without base_url:", model_card.id)
+        self.assertEqual(model_card.pid, expected_hash)
+        print("Generated hash id without base_url:", model_card.pid)
 
 if __name__ == '__main__':
         unittest.main()

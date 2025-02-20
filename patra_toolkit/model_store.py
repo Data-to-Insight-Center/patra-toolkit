@@ -29,13 +29,13 @@ class ModelStore(ABC):
         pass
 
     @abstractmethod
-    def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> str:
+    def upload(self, file_path: str, pid: str, patra_server_url: str) -> str:
         """
         Uploads the file to the respective storage backend.
 
         Args:
             file_path (str): Path to the file to upload.
-            metadata (dict): Metadata containing the model name (title) and version.
+            pid (str): Persistent identifier for the model card.
             patra_server_url (str): URL of the Patra server.
 
         Returns:
@@ -60,17 +60,13 @@ class HuggingFaceStore(ModelStore):
             raise Exception("Invalid Hugging Face credentials response from server.")
         return creds
 
-    def upload(self, file_path: str, metadata: Dict[str, str], patra_server_url: str) -> str:
+    def upload(self, file_path: str, pid: str, patra_server_url: str) -> str:
         """
         Uploads the model file to Hugging Face.
 
-        Repository name is generated as:
-          f"{owner}/{model_title}-v{model_version}"
-        where `owner` is retrieved from the credentials.
-
         Args:
             file_path (str): Local path to the file to upload.
-            metadata (dict): Must contain keys "title" and "version".
+            pid (str): Persistent identifier for the model card.
             patra_server_url (str): URL of the Patra server for credential retrieval.
 
         Returns:
@@ -80,7 +76,7 @@ class HuggingFaceStore(ModelStore):
         owner, token = creds["username"], creds["token"]
 
         # Generate repository name using the provided metadata.
-        repo_id = f"{owner}/{metadata['title'].replace(' ', '_')}-v{metadata['version']}"
+        repo_id = f"{owner}/{pid.replace(' ', '_')}"
         create_repo(repo_id=repo_id, private=False, exist_ok=True, token=token)
 
         filename = os.path.basename(file_path)

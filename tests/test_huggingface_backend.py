@@ -34,24 +34,24 @@ class TestHuggingFaceStore(unittest.TestCase):
         cls.hf_token = os.environ.get("HF_HUB_TOKEN")
 
     def setUp(self):
-        self.repo_id = "nkarthikeyan/Test_Model-v1.0"
-        self.location = f"https://huggingface.co/{self.repo_id}/blob/main/Test_Model.pt"
+        self.repo_id = "user_model_1.0"
+        self.location = f"https://huggingface.co/nkarthikeyan/{self.repo_id}/blob/main/{self.repo_id}.pt"
         self.mc = ModelCard(
-            name="Test Model",
+            name="Model",
             version="1.0",
-            short_description="Test Model",
-            full_description="Test Model",
+            short_description="Model",
+            full_description="Model",
             keywords="model card",
-            author="Neelesh Karthikeyan",
+            author="user",
             input_type="Image",
             category="classification"
         )
 
         self.mc.ai_model = AIModel(
-            name="Test Model",
+            name="Model",
             version="1.0",
-            description="Test Model",
-            owner="nkarthikeyan",
+            description="Model",
+            owner="user",
             location=self.location,
             license="Apache-2.0",
             framework="pytorch",
