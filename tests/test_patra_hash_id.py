@@ -77,10 +77,10 @@ class ModelCardTestCase2(unittest.TestCase):
             bias_analysis=self.bias_analysis,
             xai_analysis=self.xai_analysis
         )
-        model_card.id = model_card._get_hash_id("http://127.0.0.1:5002")
+        model_card.pid = model_card._get_pid("http://127.0.0.1:5002")
 
-        self.assertIsNotNone(model_card.id)
-        print("Server down case id:", model_card.id)
+        self.assertIsNotNone(model_card.pid)
+        print("Server down case id:", model_card.pid)
 
     @patch('requests.get')
     def test_generate_hash_without_base_url(self, mock_get):
