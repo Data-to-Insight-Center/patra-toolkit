@@ -9,6 +9,8 @@ import jsonschema
 import pkg_resources
 import requests
 
+from exception.patra_error import PatraSubmissionError
+from exception.patra_error import PatraIDGenerationError
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
 
@@ -313,18 +315,20 @@ class ModelCard:
         """
         if self.validate():
             try:
-                self.id = self._get_hash_id(patra_server_url)
+                self.id = self._get_unique_id(patra_server_url)
 
                 patra_submit_url = f"{patra_server_url}/upload_mc"
                 headers = {'Content-Type': 'application/json'}
                 response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
                 response.raise_for_status()
                 return response.json()
-            except ValueError as e:
-                raise e
+            except PatraIDGenerationError as e:
+                raise PatraSubmissionError(f"Unique ID has not been generated : {str(e)}")
+            except requests.exceptions.RequestException as e:
+                raise PatraSubmissionError("The Patra Server cannot be reached. Please try again.")
         return {"An error occurred: valid patra_server_url not provided. Unable to upload."}
 
-    def _get_hash_id(self, patra_server_url):
+    def _get_unique_id(self, patra_server_url):
         """
         Generates a unique identifier for the model card based on its metadata.
 
@@ -344,13 +348,13 @@ class ModelCard:
                 response.raise_for_status()
                 return response.json()
         except requests.exceptions.HTTPError as http_err:
-            raise ValueError(f"HTTP error: {response.status_code} - {response.reason}")
+            raise PatraIDGenerationError(f"HTTP error: {response.status_code} - {response.reason}")
         except requests.exceptions.ConnectionError:
-            raise ValueError("Failed to connect to the Patra Server. Check the server URL or network connection.")
+            raise PatraIDGenerationError("Failed to connect to the Patra Server. Check the server URL or network connection.")
         except requests.exceptions.Timeout:
-            raise ValueError("Request to the Patra Server timed out. Please try again later.")
+            raise PatraIDGenerationError("Request to the Patra Server timed out. Please try again later.")
         except requests.exceptions.RequestException as e:
-            raise ValueError(f"An unexpected error occurred: {str(e)}")
+            raise PatraIDGenerationError(f"An unexpected error occurred: {str(e)}")
 
     def save(self, file_location):
         """

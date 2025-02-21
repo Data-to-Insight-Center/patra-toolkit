@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import requests
 
+from exception.patra_error import PatraIDGenerationError
 from patra_toolkit import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir,
@@ -30,7 +31,7 @@ class ModelCardTestCase2(unittest.TestCase):
         self.mc_save_location = "./test_mc.json"
 
     @patch('requests.get')
-    def test_get_hash_id_success(self, mock_get):
+    def test_get_unique_id_success(self, mock_get):
         """Test that id is set correctly when server responds successfully."""
         mock_get.return_value = MagicMock(status_code=200)
         mock_get.return_value.json.return_value = {"id": "joe_icicle-camera-traps_0.1"}
@@ -51,12 +52,12 @@ class ModelCardTestCase2(unittest.TestCase):
             xai_analysis=self.xai_analysis
         )
 
-        model_card.id = model_card._get_hash_id("http://127.0.0.1:5002")
+        model_card.id = model_card._get_unique_id("http://127.0.0.1:5002")
         self.assertEqual(model_card.id, {"id": "joe_icicle-camera-traps_0.1"})
         print("Success case id:", model_card.id)
 
     @patch('requests.get')
-    def test_get_hash_id_server_down(self, mock_get):
+    def test_get_unique_id_server_down(self, mock_get):
         """Test ID generation when the server is down."""
         mock_get.side_effect = requests.exceptions.RequestException(
             "Failed to connect to the Patra Server. Please check the server URL or network connection."
@@ -78,10 +79,10 @@ class ModelCardTestCase2(unittest.TestCase):
             xai_analysis=self.xai_analysis
         )
 
-        with self.assertRaises(ValueError) as context:
-            model_card.id = model_card._get_hash_id("http://127.0.0.1:5002")
+        with self.assertRaises(PatraIDGenerationError) as context:
+            model_card.id = model_card._get_unique_id("http://127.0.0.1:5002")
 
-        self.assertIsInstance(context.exception, ValueError)
+        self.assertIsInstance(context.exception, PatraIDGenerationError)
 
         print("Server down case id: ValueError raised correctly.")
 
