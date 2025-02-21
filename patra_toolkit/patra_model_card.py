@@ -9,6 +9,8 @@ import jsonschema
 import pkg_resources
 import requests
 
+from exception.patra_error import PatraSubmissionError
+from exception.patra_error import PatraIDGenerationError
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
 
@@ -313,18 +315,20 @@ class ModelCard:
         """
         if self.validate():
             try:
-                self.id = self._get_hash_id(patra_server_url)
+                self.id = self._get_unique_id(patra_server_url)
+
                 patra_submit_url = f"{patra_server_url}/upload_mc"
                 headers = {'Content-Type': 'application/json'}
                 response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
                 response.raise_for_status()
                 return response.json()
+            except PatraIDGenerationError as e:
+                raise PatraSubmissionError(f"Unique ID has not been generated : {str(e)}")
             except requests.exceptions.RequestException as e:
-                print("The Patra Server cannot be reached. Please try again.")
-                return None
+                raise PatraSubmissionError("The Patra Server cannot be reached. Please try again.")
         return {"An error occurred: valid patra_server_url not provided. Unable to upload."}
 
-    def _get_hash_id(self, patra_server_url):
+    def _get_unique_id(self, patra_server_url):
         """
         Generates a unique identifier for the model card based on its metadata.
 
@@ -332,21 +336,25 @@ class ModelCard:
             patra_server_url (str): The Patra server URL used to generate the ID.
 
         Returns:
-            str: A unique hash identifier for the model card.
+            str: A unique identifier for the model card.
         """
-        combined_string = f"{self.name}:{self.version}:{self.author}"
         try:
             if patra_server_url:
                 patra_hash_url = f"{patra_server_url}/get_hash_id"
                 headers = {'Content-Type': 'application/json'}
-                response = requests.get(patra_hash_url, params={"combined_string": combined_string}, headers=headers)
+                response = requests.get(patra_hash_url,
+                                        params={"author": self.author, "name": self.name, "version": self.version},
+                                        headers=headers)
                 response.raise_for_status()
                 return response.json()
-            else:
-                return hashlib.sha256(combined_string.encode()).hexdigest()
+        except requests.exceptions.HTTPError as http_err:
+            raise PatraIDGenerationError(f"HTTP error: {response.status_code} - {response.reason}")
+        except requests.exceptions.ConnectionError:
+            raise PatraIDGenerationError("Failed to connect to the Patra Server. Check the server URL or network connection.")
+        except requests.exceptions.Timeout:
+            raise PatraIDGenerationError("Request to the Patra Server timed out. Please try again later.")
         except requests.exceptions.RequestException as e:
-            print("Could not connect to the Patra Server, generating the ID locally")
-            return hashlib.sha256(combined_string.encode()).hexdigest()
+            raise PatraIDGenerationError(f"An unexpected error occurred: {str(e)}")
 
     def save(self, file_location):
         """
