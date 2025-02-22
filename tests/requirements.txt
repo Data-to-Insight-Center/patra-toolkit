@@ -1,0 +1,5 @@
+patra-toolkit~=0.1.2
+pytest~=8.3.4
+python-dotenv~=1.0.1
+huggingface-hub~=0.28.1
+torchvision~=0.21.0
