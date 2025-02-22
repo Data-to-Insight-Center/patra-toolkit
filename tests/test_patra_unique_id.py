@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import requests
 
+from exception.patra_error import PatraIDGenerationError
 from patra_toolkit import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir,
@@ -30,11 +31,10 @@ class ModelCardTestCase2(unittest.TestCase):
         self.mc_save_location = "./test_mc.json"
 
     @patch('requests.get')
-    def test_get_hash_id_success(self, mock_get):
+    def test_get_unique_id_success(self, mock_get):
         """Test that id is set correctly when server responds successfully."""
-        # Mock the server response to return a hash ID
         mock_get.return_value = MagicMock(status_code=200)
-        mock_get.return_value.json.return_value = "e6c22bdf9fd3c164a2a9a083fb56fca9328f6ca30f7dcd2ebfc140a7d6f02149"
+        mock_get.return_value.json.return_value = {"id": "joe_icicle-camera-traps_0.1"}
 
         model_card = ModelCard(
             name="icicle-camera-traps",
@@ -52,41 +52,16 @@ class ModelCardTestCase2(unittest.TestCase):
             xai_analysis=self.xai_analysis
         )
 
-        model_card.pid = model_card._get_pid("http://127.0.0.1:5002")
-        self.assertEqual(model_card.pid, "e6c22bdf9fd3c164a2a9a083fb56fca9328f6ca30f7dcd2ebfc140a7d6f02149")
-        print("Success case id:", model_card.pid)
+        model_card.id = model_card._get_unique_id("http://127.0.0.1:5002")
+        self.assertEqual(model_card.id, {"id": "joe_icicle-camera-traps_0.1"})
+        print("Success case id:", model_card.id)
 
     @patch('requests.get')
-    def test_get_hash_id_server_down(self, mock_get):
-        """Test hash generation when server is down."""
-        # Simulate a server failure
-        mock_get.side_effect = requests.exceptions.RequestException("Server is down")
-
-        model_card = ModelCard(
-            name="icicle-camera-traps",
-            version="0.1",
-            short_description="Camera Traps CNN inference model card",
-            full_description="Camera Traps CNN full descr inference model card",
-            keywords="cnn, pytorch, icicle",
-            author="Joe",
-            input_data="",
-            input_type="image",
-            output_data="",
-            category="classification",
-            ai_model=self.aimodel,
-            bias_analysis=self.bias_analysis,
-            xai_analysis=self.xai_analysis
+    def test_get_unique_id_server_down(self, mock_get):
+        """Test ID generation when the server is down."""
+        mock_get.side_effect = requests.exceptions.RequestException(
+            "Failed to connect to the Patra Server. Please check the server URL or network connection."
         )
-        model_card.pid = model_card._get_pid("http://127.0.0.1:5002")
-
-        self.assertIsNotNone(model_card.pid)
-        print("Server down case id:", model_card.pid)
-
-    @patch('requests.get')
-    def test_generate_hash_without_base_url(self, mock_get):
-        """Test hash generation when no base URL is provided."""
-
-        mock_get.assert_not_called()
 
         model_card = ModelCard(
             name="icicle-camera-traps",
@@ -104,13 +79,12 @@ class ModelCardTestCase2(unittest.TestCase):
             xai_analysis=self.xai_analysis
         )
 
-        model_card.pid = model_card._get_pid(None)
-        # Generate the expected hash value
-        combined_string = f"{model_card.name}:{model_card.version}:{model_card.author}"
-        expected_hash = hashlib.sha256(combined_string.encode()).hexdigest()
+        with self.assertRaises(PatraIDGenerationError) as context:
+            model_card.id = model_card._get_unique_id("http://127.0.0.1:5002")
 
-        self.assertEqual(model_card.pid, expected_hash)
-        print("Generated hash id without base_url:", model_card.pid)
+        self.assertIsInstance(context.exception, PatraIDGenerationError)
+
+        print("Server down case id: ValueError raised correctly.")
 
 if __name__ == '__main__':
         unittest.main()

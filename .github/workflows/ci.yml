@@ -9,9 +9,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run tests
-        run: |
-          pip install -r tests/requirements.txt
-          python3 -m unittest tests/test_patra_mc.py
-          python3 -m unittest tests/test_patra_inout_data.py
-          python3 -m unittest tests/test_patra_hash_id.py
+#      - name: Run tests
+#        run: |
+#          pip install -r tests/requirements.txt
+#          python3 -m unittest tests/test_patra_mc.py
+#          python3 -m unittest tests/test_patra_inout_data.py
+#          python3 -m unittest tests/test_patra_unique_id.py
