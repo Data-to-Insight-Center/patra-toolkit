@@ -1,18 +1,24 @@
 import hashlib
 import json
+import logging
 import os.path
+import tempfile
 from dataclasses import dataclass, field
 from json import JSONEncoder
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 import jsonschema
 import pkg_resources
 import requests
+import torch
 
 from exception.patra_error import PatraSubmissionError
 from exception.patra_error import PatraIDGenerationError
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
+from .model_store import get_model_store
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 
@@ -313,20 +319,62 @@ class ModelCard:
         Returns:
             dict: The server's response as a JSON object.
         """
-        if self.validate():
-            try:
-                self.id = self._get_unique_id(patra_server_url)
+        model_location = None
+        try:
+            if not self.validate():
+                raise Exception("Model card validation failed.")
+            logging.info("Model card validation successful.")
 
-                patra_submit_url = f"{patra_server_url}/upload_mc"
-                headers = {'Content-Type': 'application/json'}
-                response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
-                response.raise_for_status()
-                return response.json()
-            except PatraIDGenerationError as e:
-                raise PatraSubmissionError(f"Unique ID has not been generated : {str(e)}")
-            except requests.exceptions.RequestException as e:
-                raise PatraSubmissionError("The Patra Server cannot be reached. Please try again.")
-        return {"An error occurred: valid patra_server_url not provided. Unable to upload."}
+            # Generate PID that will be used as the repository name.
+            self.id = self._get_unique_id(patra_server_url)
+            logging.info(f"PID generated: {self.pid}")
+
+            # Save model weights to a file and upload to the specified model store.
+            if model and model_store:
+                temp_dir = tempfile.mkdtemp()
+                model_filename = f"{self.pid}.{model_format}"
+                model_path = os.path.join(temp_dir, model_filename)
+                logging.info(f"Saving model to temporary file: {model_path}")
+
+                if model_format == "pt":
+                    torch.save(model.state_dict(), model_path)
+                else:
+                    raise Exception(f"Unsupported model format: {model_format}")
+
+                backend = get_model_store(model_store.lower())
+                model_location = backend.upload(model_path, self.pid, patra_server_url)
+                logging.info(f"Model uploaded at {model_location}")
+
+            if model_location:
+                self.output_data = model_location
+
+            # Submit the model card to the Patra server.
+            patra_submit_url = f"{patra_server_url}/upload_mc"
+            response = requests.post(patra_submit_url, json=json.loads(str(self)),
+                                     headers={'Content-Type': 'application/json'})
+            response.raise_for_status()
+            logging.info(f"Model card submitted successfully")
+
+        except PatraIDGenerationError as e:
+            raise PatraSubmissionError(f"Unique ID has not been generated : {str(e)}")
+        except requests.exceptions.RequestException as e:
+            raise PatraSubmissionError("The Patra Server cannot be reached. Please try again.")
+
+        except Exception as e:
+            logging.error(f"Submission failed: {e}")
+
+            # Attempt rollback if the model was uploaded to Hugging Face.
+            if model_location and model_store:
+                try:
+                    backend = get_model_store(model_store.lower())
+                    backend.delete_repo(self.pid, patra_server_url)
+                    logging.info("Rollback successful.")
+
+                except Exception as del_err:
+                    logging.error(f"Rollback failed: Unable to delete repository: {del_err}")
+            return {"error": f"Submission failed: {str(e)}"}
+
+        return response.json()
 
     def _get_unique_id(self, patra_server_url):
         """
@@ -338,6 +386,7 @@ class ModelCard:
         Returns:
             str: A unique identifier for the model card.
         """
+        combined_string = f"{self.name}:{self.version}:{self.author}"
         try:
             if patra_server_url:
                 patra_hash_url = f"{patra_server_url}/get_hash_id"
@@ -354,7 +403,8 @@ class ModelCard:
         except requests.exceptions.Timeout:
             raise PatraIDGenerationError("Request to the Patra Server timed out. Please try again later.")
         except requests.exceptions.RequestException as e:
-            raise PatraIDGenerationError(f"An unexpected error occurred: {str(e)}")
+            print("Could not connect to the Patra Server, generating the ID locally")
+            return hashlib.sha256(combined_string.encode()).hexdigest()
 
     def save(self, file_location):
         """
