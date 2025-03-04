@@ -44,7 +44,7 @@ pip install -e <local_git_dir>/patra_toolkit
 
 ## Usage
 ### Create a Model Card
-Find the descriptions of the Model Card parameters in the [schema descriptions document](https://github.com/Data-to-Insight-Center/patra-toolkit/blob/main/docs/schema_description.md).
+Find the descriptions of the Model Card parameters in the [schema descriptions document](./docs/schema_description.md).
 
 ```python
 from patra_toolkit import ModelCard
