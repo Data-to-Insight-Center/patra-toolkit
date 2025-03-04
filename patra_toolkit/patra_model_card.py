@@ -1,5 +1,5 @@
-import hashlib
 import json
+import logging
 import os.path
 from dataclasses import dataclass, field
 from json import JSONEncoder
@@ -9,13 +9,13 @@ import jsonschema
 import pkg_resources
 import requests
 
-from exception.patra_error import PatraSubmissionError
-from exception.patra_error import PatraIDGenerationError
+from .exceptions import PatraIDGenerationError
+from .exceptions import PatraSubmissionError
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
-
+logging.basicConfig(level=logging.INFO)
 
 @dataclass
 class Metric:
@@ -151,13 +151,15 @@ class ExplainabilityAnalysis:
 @dataclass
 class ModelCard:
     """
-    Represents an AI model card to document model metadata, analyses, and requirements.
+    Represents a documented model card containing metadata, analyses, and requirements
+    for an AI model. It includes fields for describing the model, performing bias and
+    explainability analyses, and validating schema compliance.
 
     Args:
-        name (str): The name of the model.
-        version (str): The model's version.
-        short_description (str): A brief description of the model.
-        full_description (str): A detailed description of the model.
+        name (str): The name of the model card.
+        version (str): The model card's version.
+        short_description (str): A brief description of the model card.
+        full_description (str): A comprehensive description of the model card.
         keywords (str): Comma-separated keywords for searchability.
         author (str): The model's creator or owner.
         input_type (str): Type of input data (e.g., "Image", "Text").
@@ -165,9 +167,9 @@ class ModelCard:
         input_data (Optional[str]): Description of the model's input data.
         output_data (Optional[str]): Description of the model's output data.
         foundational_model (Optional[str]): Reference to any foundational model used.
-        ai_model (Optional[AIModel]): An instance of `AIModel` containing model details.
-        bias_analysis (Optional[BiasAnalysis]): Instance of `BiasAnalysis` containing bias metrics.
-        xai_analysis (Optional[ExplainabilityAnalysis]): Instance of `ExplainabilityAnalysis` with interpretability metrics.
+        ai_model (Optional[object]): Reference to an `AIModel` instance containing model details.
+        bias_analysis (Optional[object]): Reference to a `BiasAnalysis` instance containing bias metrics.
+        xai_analysis (Optional[object]): Reference to an `ExplainabilityAnalysis` instance with interpretability metrics.
         model_requirements (Optional[List[str]]): List of required packages and dependencies.
         id (Optional[str]): Unique identifier for the model card, generated upon submission.
 
@@ -221,114 +223,123 @@ class ModelCard:
     input_data: Optional[str] = ""
     output_data: Optional[str] = ""
     foundational_model: Optional[str] = ""
-    ai_model: Optional[AIModel] = None
-    bias_analysis: Optional[BiasAnalysis] = None
-    xai_analysis: Optional[ExplainabilityAnalysis] = None
-    model_requirements: Optional[List] = None
+    ai_model: Optional[object] = None
+    bias_analysis: Optional[object] = None
+    xai_analysis: Optional[object] = None
+    model_requirements: Optional[List[str]] = None
     id: Optional[str] = field(init=False, default=None)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
-        Returns a JSON string representation of the model card.
-
         Returns:
-            str: A JSON-formatted string representing the model card.
+            str: A JSON-formatted string representation of the model card.
         """
         return json.dumps(self.__dict__, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
 
-    def populate_bias(self, dataset, true_labels, predicted_labels, sensitive_feature_name, sensitive_feature_data, model):
+    def populate_bias(self,
+                      dataset,
+                      true_labels,
+                      predicted_labels,
+                      sensitive_feature_name,
+                      sensitive_feature_data,
+                      model) -> None:
         """
-        Calculates and stores fairness metrics.
+        Calculates and stores fairness metrics for the model.
 
         Args:
             dataset (object): The dataset used for bias analysis.
             true_labels (list): The ground truth labels.
-            predicted_labels (list): Model's predictions.
+            predicted_labels (list): The model's predictions.
             sensitive_feature_name (str): The name of the sensitive attribute.
             sensitive_feature_data (list): Values for the sensitive feature.
             model (object): The model being analyzed.
-
-        Returns:
-            None
         """
         bias_analyzer = BiasAnalyzer(dataset, true_labels, predicted_labels, sensitive_feature_name,
                                      sensitive_feature_data, model)
         self.bias_analysis = bias_analyzer.calculate_bias_metrics()
 
-    def populate_xai(self, train_dataset, column_names, model, n_features=10):
+    def populate_xai(self,
+                     train_dataset,
+                     column_names,
+                     model,
+                     n_features: int = 10) -> None:
         """
-        Computes and stores feature importance metrics.
+        Computes and stores feature importance metrics for explainability.
 
         Args:
             train_dataset (object): Training dataset used in the analysis.
-            column_names (list): Names of the features.
+            column_names (list): Names of the features in the dataset.
             model (object): The model being explained.
-            n_features (int, optional): Number of features to analyze. Default is 10.
-
-        Returns:
-            None
+            n_features (int): Number of features to analyze. Default is 10.
         """
         xai_analyzer = ExplainabilityAnalyser(train_dataset, column_names, model)
         self.xai_analysis = xai_analyzer.calculate_xai_features(n_features)
 
-    def populate_requirements(self):
+    def populate_requirements(self) -> None:
         """
-        Collects package requirements for the model card, excluding specific dependencies.
-
-        Returns:
-            None
+        Gathers package requirements for the model card, excluding certain dependencies.
         """
         exclude_packages = {"shap", "fairlearn"}
         installed_packages = pkg_resources.working_set
-        packages_list = sorted(["%s==%s" % (i.key, i.version) for i in installed_packages])
-        self.model_requirements = [pkg for pkg in packages_list if pkg.split("==")[0] not in exclude_packages]
+        packages_list = sorted([f"{pkg.key}=={pkg.version}" for pkg in installed_packages])
+        self.model_requirements = [
+            pkg for pkg in packages_list
+            if pkg.split("==")[0] not in exclude_packages
+        ]
 
-    def validate(self):
+    def validate(self) -> bool:
         """
         Validates the model card against a predefined JSON schema.
 
         Returns:
             bool: True if the model card is valid according to the schema, False otherwise.
         """
-        mc_json = self.__str__()
+        mc_json_str = str(self)
         try:
-            with open(SCHEMA_JSON, 'r') as schema_file:
+            with open(SCHEMA_JSON, 'r', encoding='utf-8') as schema_file:
                 schema = json.load(schema_file)
-            jsonschema.validate(instance=json.loads(mc_json), schema=schema)
+            jsonschema.validate(instance=json.loads(mc_json_str), schema=schema)
+            logging.info("Model card validation successful.")
             return True
-        except jsonschema.ValidationError as e:
-            print(e.message)
+        except jsonschema.ValidationError as val_err:
+            logging.error(f"Model card validation error: {val_err.message}")
             return False
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+        except Exception as exc:
+            logging.error(f"Unexpected error during validation: {exc}")
             return False
 
-    def submit(self, patra_server_url):
+    def submit(self, patra_server_url: str) -> dict:
         """
         Validates and submits the model card to the specified Patra server.
 
         Args:
-            patra_server_url (str): The Patra server URL where the model card should be submitted.
+            patra_server_url (str): The Patra server URL for model card submission.
 
         Returns:
-            dict: The server's response as a JSON object.
+            dict: The server's JSON response on success, or an error message on failure.
         """
-        if self.validate():
-            try:
-                self.id = self._get_unique_id(patra_server_url)
+        if not patra_server_url:
+            logging.error("No Patra server URL provided.")
+            return {"error": "No Patra server URL provided."}
 
-                patra_submit_url = f"{patra_server_url}/upload_mc"
-                headers = {'Content-Type': 'application/json'}
-                response = requests.post(patra_submit_url, json=json.loads(str(self)), headers=headers)
-                response.raise_for_status()
-                return response.json()
-            except PatraIDGenerationError as e:
-                raise PatraSubmissionError(f"Unique ID has not been generated : {str(e)}")
-            except requests.exceptions.RequestException as e:
-                raise PatraSubmissionError("The Patra Server cannot be reached. Please try again.")
-        return {"An error occurred: valid patra_server_url not provided. Unable to upload."}
+        if not self.validate():
+            logging.error("Model card validation failed; submission aborted.")
+            return {"error": "Model card validation failed."}
 
-    def _get_unique_id(self, patra_server_url):
+        try:
+            self.id = self._generate_unique_id(patra_server_url)
+            submit_url = f"{patra_server_url}/upload_mc"
+            headers = {'Content-Type': 'application/json'}
+            response = requests.post(submit_url, json=json.loads(str(self)), headers=headers)
+            response.raise_for_status()
+            logging.info("Model card submitted successfully.")
+            return response.json()
+        except PatraIDGenerationError as pid_err:
+            raise PatraSubmissionError(f"Unique ID not generated: {pid_err}")
+        except requests.exceptions.RequestException as req_err:
+            raise PatraSubmissionError(f"Patra server submission failed: {req_err}")
+
+    def _generate_unique_id(self, patra_server_url: str) -> str:
         """
         Generates a unique identifier for the model card based on its metadata.
 
@@ -337,38 +348,45 @@ class ModelCard:
 
         Returns:
             str: A unique identifier for the model card.
-        """
-        try:
-            if patra_server_url:
-                patra_hash_url = f"{patra_server_url}/get_hash_id"
-                headers = {'Content-Type': 'application/json'}
-                response = requests.get(patra_hash_url,
-                                        params={"author": self.author, "name": self.name, "version": self.version},
-                                        headers=headers)
-                response.raise_for_status()
-                return response.json()
-        except requests.exceptions.HTTPError as http_err:
-            raise PatraIDGenerationError(f"HTTP error: {response.status_code} - {response.reason}")
-        except requests.exceptions.ConnectionError:
-            raise PatraIDGenerationError("Failed to connect to the Patra Server. Check the server URL or network connection.")
-        except requests.exceptions.Timeout:
-            raise PatraIDGenerationError("Request to the Patra Server timed out. Please try again later.")
-        except requests.exceptions.RequestException as e:
-            raise PatraIDGenerationError(f"An unexpected error occurred: {str(e)}")
 
-    def save(self, file_location):
+        Raises:
+            PatraIDGenerationError: If the server fails to generate an ID or returns an error.
+        """
+        combined_string = f"{self.name}:{self.version}:{self.author}"
+        if not patra_server_url:
+            raise PatraIDGenerationError("No server URL provided for ID generation.")
+
+        try:
+            hash_url = f"{patra_server_url}/get_hash_id"
+            headers = {'Content-Type': 'application/json'}
+            params = {"author": self.author, "name": self.name, "version": self.version}
+            response = requests.get(hash_url, params=params, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as http_err:
+            msg = f"HTTP {response.status_code} error from server: {response.reason}"
+            logging.error(msg)
+            raise PatraIDGenerationError(msg)
+        except requests.exceptions.ConnectionError:
+            raise PatraIDGenerationError("Connection to Patra server failed.")
+        except requests.exceptions.Timeout:
+            raise PatraIDGenerationError("Request to Patra server timed out.")
+        except requests.exceptions.RequestException as req_exc:
+            raise PatraIDGenerationError(f"Unexpected error: {req_exc}")
+
+    def save(self, file_location: str) -> None:
         """
         Saves the model card as a JSON file to the specified location.
 
         Args:
-            file_location (str): The path where the model card JSON file will be saved.
-
-        Returns:
-            None
+            file_location (str): Path where the model card JSON file will be saved.
         """
-        with open(file_location, 'w') as json_file:
-            json_file.write(str(self))
-
+        try:
+            with open(file_location, 'w', encoding='utf-8') as json_file:
+                json_file.write(str(self))
+            logging.info(f"Model card saved to {file_location}.")
+        except IOError as io_err:
+            logging.error(f"Failed to save model card: {io_err}")
 
 class ModelCardJSONEncoder(JSONEncoder):
     """
