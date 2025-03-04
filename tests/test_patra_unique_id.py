@@ -1,12 +1,11 @@
-import hashlib
 import os
-
 import unittest
 from unittest.mock import patch, MagicMock
+
 import requests
 
-from exception.patra_error import PatraIDGenerationError
 from patra_toolkit import ModelCard, AIModel, BiasAnalysis, ExplainabilityAnalysis, Metric
+from patra_toolkit.exceptions import PatraIDGenerationError
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), os.pardir,
                            'patra_toolkit/schema/schema.json')
@@ -52,7 +51,7 @@ class ModelCardTestCase2(unittest.TestCase):
             xai_analysis=self.xai_analysis
         )
 
-        model_card.id = model_card._get_unique_id("http://127.0.0.1:5002")
+        model_card.id = model_card._generate_unique_id("http://127.0.0.1:5002")
         self.assertEqual(model_card.id, {"id": "joe_icicle-camera-traps_0.1"})
         print("Success case id:", model_card.id)
 
@@ -80,7 +79,7 @@ class ModelCardTestCase2(unittest.TestCase):
         )
 
         with self.assertRaises(PatraIDGenerationError) as context:
-            model_card.id = model_card._get_unique_id("http://127.0.0.1:5002")
+            model_card.id = model_card._generate_unique_id("http://127.0.0.1:5002")
 
         self.assertIsInstance(context.exception, PatraIDGenerationError)
 
