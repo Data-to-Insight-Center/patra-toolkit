@@ -106,16 +106,17 @@ mc.populate_xai(X_test, x_columns, model, top_n=10)
 ```
 
 ### Validate and Save the Model Card
+
 ```python
 # Verify the model card content against the schema
 mc.validate()
-mc.save(<file_path>)
+mc.save( < file_path >)
 
 # Capture Python package dependencies and versions
 mc.populate_requirements()
 
 # Upload the model card to the Patra server
-mc.submit(<patra_server_url>)
+mc.submit_model() < patra_server_url >)
 ```
 
 ---

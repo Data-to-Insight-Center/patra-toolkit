@@ -1,6 +1,7 @@
 import json
 import logging
 import os.path
+import tempfile
 from dataclasses import dataclass, field
 from json import JSONEncoder
 from typing import List, Optional, Dict
@@ -8,14 +9,16 @@ from typing import List, Optional, Dict
 import jsonschema
 import pkg_resources
 import requests
+import torch
 
-from .exceptions import PatraIDGenerationError
-from .exceptions import PatraSubmissionError
+from .exceptions import PatraIDGenerationError, PatraSubmissionError
 from .fairlearn_bias import BiasAnalyzer
 from .shap_xai import ExplainabilityAnalyser
+from .model_store import get_model_store
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 logging.basicConfig(level=logging.INFO)
+
 
 @dataclass
 class Metric:
@@ -28,6 +31,7 @@ class Metric:
     """
     key: str
     value: str
+
 
 @dataclass
 class AIModel:
@@ -308,36 +312,141 @@ class ModelCard:
             logging.error(f"Unexpected error during validation: {exc}")
             return False
 
-    def submit(self, patra_server_url: str) -> dict:
+    def submit_model(self,
+                     patra_server_url: str,
+                     model: torch.nn.Module,
+                     model_format: str = "pt",
+                     model_store: str = "huggingface") -> dict:
         """
-        Validates and submits the model card to the specified Patra server.
+        Validates the model card, uploads model weights to the specified storage backend,
+        and submits the model card to the Patra server. All steps are atomic; if any fail,
+        the process is rolled back.
 
         Args:
-            patra_server_url (str): The Patra server URL for model card submission.
+            patra_server_url (str): URL of the Patra server.
+            model (torch.nn.Module): Trained model to be saved and uploaded.
+            model_format (str): Format for saving model weights (currently only "pt" is supported).
+            model_store (str): Storage backend identifier (e.g., "huggingface").
 
         Returns:
-            dict: The server's JSON response on success, or an error message on failure.
+            dict: JSON response from the Patra server on success, or an error dict on failure.
         """
-        if not patra_server_url:
-            logging.error("No Patra server URL provided.")
-            return {"error": "No Patra server URL provided."}
-
-        if not self.validate():
-            logging.error("Model card validation failed; submission aborted.")
-            return {"error": "Model card validation failed."}
-
+        model_location = None
         try:
+            if not patra_server_url:
+                logging.error("No Patra server URL provided.")
+                return {"error": "No Patra server URL provided."}
+            if not self.validate():
+                raise Exception("Model card validation failed.")
+            logging.info("Model card validation successful.")
+
+            # Generate a unique PID for repository naming.
             self.id = self._generate_unique_id(patra_server_url)
+            logging.info(f"PID generated: {self.id}")
+
+            # Save model weights to a temporary file and upload.
+            with tempfile.TemporaryDirectory() as temp_dir:
+                model_filename = f"{self.id}.{model_format}"
+                model_path = os.path.join(temp_dir, model_filename)
+                logging.info(f"Saving model weights to temporary file: {model_path}")
+                if model_format == "pt":
+                    torch.save(model.state_dict(), model_path)
+                else:
+                    raise Exception(f"Unsupported model format: {model_format}")
+                backend = get_model_store(model_store.lower())
+                logging.info(f"Uploading model to {model_store}...")
+                model_location = backend.upload(model_path, self.id, patra_server_url)
+                logging.info(f"Model uploaded at {model_location}")
+
+            if model_location:
+                self.output_data = model_location
+
+            # Submit the model card to the Patra server.
             submit_url = f"{patra_server_url}/upload_mc"
-            headers = {'Content-Type': 'application/json'}
-            response = requests.post(submit_url, json=json.loads(str(self)), headers=headers)
+            response = requests.post(
+                submit_url,
+                json=json.loads(str(self)),
+                headers={'Content-Type': 'application/json'}
+            )
             response.raise_for_status()
             logging.info("Model card submitted successfully.")
             return response.json()
-        except PatraIDGenerationError as pid_err:
-            raise PatraSubmissionError(f"Unique ID not generated: {pid_err}")
-        except requests.exceptions.RequestException as req_err:
-            raise PatraSubmissionError(f"Patra server submission failed: {req_err}")
+
+        except (PatraIDGenerationError, requests.exceptions.RequestException) as e:
+            logging.error(f"Submission failed: {e}")
+            # Rollback if using Hugging Face and model was uploaded.
+            if model_store.lower() == "huggingface" and model_location:
+                try:
+                    backend = get_model_store(model_store.lower())
+                    logging.info(f"Rolling back: deleting repository {self.id}...")
+                    backend.delete_repo(self.id, patra_server_url)
+                    logging.info("Rollback successful.")
+                except Exception as del_err:
+                    logging.error(f"Rollback failed: {del_err}")
+            return {"error": f"Submission failed: {str(e)}"}
+
+    def submit_artifact(self,
+                        patra_server_url: str,
+                        artifact_path: str,
+                        model_store: str = "huggingface") -> dict:
+        """
+        Validates the model card, uploads an artifact (e.g., a labels file) to the specified storage backend,
+        and submits the updated model card to the Patra server. The artifact's URL is stored in output_data.
+
+        Args:
+            patra_server_url (str): URL of the Patra server.
+            artifact_path (str): Local path to the artifact file.
+            model_store (str): Storage backend identifier (e.g., "huggingface").
+
+        Returns:
+            dict: JSON response from the Patra server on success, or an error dict on failure.
+        """
+        artifact_location = None
+        try:
+            if not patra_server_url:
+                logging.error("No Patra server URL provided.")
+                return {"error": "No Patra server URL provided."}
+            if not self.validate():
+                raise Exception("Model card validation failed.")
+            logging.info("Model card validation successful.")
+
+            # Generate a unique PID for repository naming.
+            self.id = self._generate_unique_id(patra_server_url)
+            logging.info(f"PID generated: {self.id}")
+
+            # Upload the artifact.
+            backend = get_model_store(model_store.lower())
+            logging.info(f"Uploading artifact from {artifact_path} to {model_store}...")
+            artifact_location = backend.upload(artifact_path, self.id, patra_server_url)
+            logging.info(f"Artifact uploaded at {artifact_location}")
+
+            if artifact_location:
+                self.output_data = artifact_location
+
+            # Submit the model card to the Patra server.
+            submit_url = f"{patra_server_url}/upload_mc"
+            response = requests.post(
+                submit_url,
+                json=json.loads(str(self)),
+                headers={'Content-Type': 'application/json'}
+            )
+            response.raise_for_status()
+            logging.info("Model card submitted successfully.")
+            return response.json()
+
+        except (PatraIDGenerationError, requests.exceptions.RequestException) as e:
+            logging.error(f"Artifact submission failed: {e}")
+
+            # Rollback if artifact was uploaded.
+            if model_store.lower() == "huggingface" and artifact_location:
+                try:
+                    backend = get_model_store(model_store.lower())
+                    logging.info(f"Rolling back: deleting repository {self.id}...")
+                    backend.delete_repo(self.id, patra_server_url)
+                    logging.info("Rollback successful.")
+                except Exception as del_err:
+                    logging.error(f"Rollback failed: {del_err}")
+            return {"error": f"Artifact submission failed: {str(e)}"}
 
     def _generate_unique_id(self, patra_server_url: str) -> str:
         """
@@ -352,15 +461,13 @@ class ModelCard:
         Raises:
             PatraIDGenerationError: If the server fails to generate an ID or returns an error.
         """
-        combined_string = f"{self.name}:{self.version}:{self.author}"
         if not patra_server_url:
             raise PatraIDGenerationError("No server URL provided for ID generation.")
 
         try:
-            hash_url = f"{patra_server_url}/get_hash_id"
-            headers = {'Content-Type': 'application/json'}
-            params = {"author": self.author, "name": self.name, "version": self.version}
-            response = requests.get(hash_url, params=params, headers=headers)
+            response = requests.get(f"{patra_server_url}/get_pid",
+                                    params={"author": self.author, "name": self.name, "version": self.version},
+                                    headers={'Content-Type': 'application/json'})
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as http_err:
@@ -387,6 +494,7 @@ class ModelCard:
             logging.info(f"Model card saved to {file_location}.")
         except IOError as io_err:
             logging.error(f"Failed to save model card: {io_err}")
+
 
 class ModelCardJSONEncoder(JSONEncoder):
     """
