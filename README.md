@@ -63,7 +63,7 @@ mc = ModelCard(
 
 # Add Model Metadata
 mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
-mc.output_data = 'https://github.iu.edu/swithana/mcwork/rf_sklearn/adult_model.pkl'
+mc.output_data = 'https://huggingface.co/Data-to-Insight-Center/UCI-Adult'
 ```
 
 ### Initialize an AI/ML Model
