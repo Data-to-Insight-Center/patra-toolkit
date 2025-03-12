@@ -44,7 +44,7 @@ class AIModel:
     framework: str
     model_type: str
     test_accuracy: float
-    inference_label: Optional[str] = None
+    inference_label: Optional[str] = ""
     model_structure: Optional[object] = field(default_factory=dict)
     metrics: Dict[str, str] = field(default_factory=dict)
 
@@ -106,7 +106,7 @@ class ModelCard:
     author: str
     input_type: str
     category: str
-    citation: Optional[str] = None
+    citation: Optional[str] = ""
     input_data: Optional[str] = ""
     output_data: Optional[str] = ""
     foundational_model: Optional[str] = ""

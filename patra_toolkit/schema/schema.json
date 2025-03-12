@@ -54,7 +54,7 @@
     },
     "citation": {
       "type": "string",
-      "description": "Optional citation information for the Model Card"
+      "description": "Citation information for the Model Card"
     },
     "input_data": {
       "$ref": "#/commonFields/urlOrDoi"
@@ -179,7 +179,7 @@
         },
         "inference_label": {
           "type": "string",
-          "description": "Optional inference label for the AI model"
+          "description": "Inference label for the AI model"
         }
       },
       "required": [
