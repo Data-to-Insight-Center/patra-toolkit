@@ -172,6 +172,10 @@
           "items": {
             "$ref": "#/fields/metrics"
           }
+        },
+        "inference_label": {
+          "type": "string",
+          "description": "Optional inference label for the AI model"
         }
       },
       "required": [
