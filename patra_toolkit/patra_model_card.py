@@ -106,6 +106,7 @@ class ModelCard:
     author: str
     input_type: str
     category: str
+    citation: Optional[str] = None
     input_data: Optional[str] = ""
     output_data: Optional[str] = ""
     foundational_model: Optional[str] = ""

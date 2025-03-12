@@ -52,6 +52,10 @@
       "type": "string",
       "description": "The author or creator of the Model Card"
     },
+    "citation": {
+      "type": "string",
+      "description": "Optional citation information for the Model Card"
+    },
     "input_data": {
       "$ref": "#/commonFields/urlOrDoi"
     },
