@@ -123,6 +123,18 @@ class HuggingFaceStore(ModelStore):
         api = HfApi()
         api.delete_repo(repo_id=repo_id, token=token)
 
+    def upload_artifact(self, file_path: str, pid: str, repository_location: str) -> str:
+        """
+        Uploads an artifact file to the given repository location.
+        This method bypasses the credential retrieval process.
+        """
+        files = {'file': open(file_path, 'rb')}
+        upload_url = f"{repository_location}/upload_artifact?pid={pid}"
+        response = requests.post(upload_url, files=files)
+        response.raise_for_status()
+
+        return response.json().get("artifact_url", repository_location)
+
 
 class GitHubStore(ModelStore):
     @classmethod

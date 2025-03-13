@@ -218,21 +218,17 @@ class ModelCard:
                 file_name = f"{self.id}.{file_format}"
                 path_in_tmp = os.path.join(temp_dir, file_name)
 
-                # If it's a PyTorch model
                 if isinstance(model, torch.nn.Module):
                     if file_format.lower() == "pt":
-                        # Save state_dict (works for Sequential and other modules)
                         torch.save(model.state_dict(), path_in_tmp)
                     elif file_format.lower() == "onnx":
-                        # Define a dummy input. This default is for models accepting (N,3,224,224) images.
-                        # For other models, you may need to adjust this.
                         dummy_input = torch.randn(1, 3, 224, 224)
                         torch.onnx.export(model, dummy_input, path_in_tmp)
                     elif file_format.lower() == "h5":
                         raise Exception("h5 format is not supported for PyTorch models. Use 'pt' or 'onnx' instead.")
                     else:
                         raise Exception(f"Unsupported format: {file_format}")
-                # Else, if it's a TensorFlow (Keras) model and TensorFlow is installed
+
                 elif tf is not None and isinstance(model, tf.keras.Model):
                     if file_format.lower() == "h5":
                         model.save(path_in_tmp, save_format='h5')
@@ -249,22 +245,33 @@ class ModelCard:
 
         return self._submit_to_store(patra_server_url, model_store, upload_func)
 
-    def submit_artifact(self,
-                        patra_server_url: str,
-                        artifact_path: str,
-                        model_store: str = "huggingface") -> dict:
+    def submit_artifact(self, patra_server_url: str, artifact_path: str) -> dict:
         """
-        Uploads an artifact file and updates the Patra KG with the new artifact location in the model card.
-        Checks for an existing model card to prevent duplicate nodes in Neo4j.
+        Uploads an artifact file using the repository location stored in self.output_data.
+        This method should only be called after submit_model has been successfully executed.
+        It infers the model store from self.output_data and uses the backend's upload method.
+        Credentials are retrieved from the Patra server via patra_server_url.
         """
+        if not self.output_data:
+            raise ValueError("No repository location available. Ensure submit_model is called successfully.")
 
-        def upload_func():
-            backend = get_model_store(model_store.lower())
+        if "huggingface.co" in self.output_data:
+            model_store_name = "huggingface"
+        elif "github.com" in self.output_data:
+            model_store_name = "github"
+        else:
+            raise ValueError("Unsupported repository location. Expected a HuggingFace or GitHub URL.")
+
+        backend = get_model_store(model_store_name)
+
+        try:
             artifact_location = backend.upload(artifact_path, self.id, patra_server_url)
-            logging.info(f"Artifact stored at: {artifact_location}")
-            return artifact_location
+        except Exception as e:
+            logging.error(f"Artifact upload failed: {e}")
+            raise e
 
-        return self._submit_to_store(patra_server_url, model_store, upload_func)
+        logging.info(f"Artifact stored at: {artifact_location}")
+        return artifact_location
 
     def _generate_unique_id(self, patra_server_url: str) -> str:
         """
