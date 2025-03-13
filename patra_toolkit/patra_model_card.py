@@ -265,7 +265,7 @@ class ModelCard:
         backend = get_model_store(model_store_name)
 
         try:
-            artifact_location = backend.upload(artifact_path, self.id, patra_server_url)
+            artifact_location = backend.upload(artifact_path, self.id, credentials)
         except Exception as e:
             logging.error(f"Artifact upload failed: {e}")
             raise e
