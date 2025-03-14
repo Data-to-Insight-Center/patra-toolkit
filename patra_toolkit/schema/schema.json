@@ -52,6 +52,10 @@
       "type": "string",
       "description": "The author or creator of the Model Card"
     },
+    "citation": {
+      "type": "string",
+      "description": "Citation information for the Model Card"
+    },
     "input_data": {
       "$ref": "#/commonFields/urlOrDoi"
     },
@@ -172,6 +176,10 @@
           "items": {
             "$ref": "#/fields/metrics"
           }
+        },
+        "inference_label": {
+          "type": "string",
+          "description": "Inference label for the AI model"
         }
       },
       "required": [
