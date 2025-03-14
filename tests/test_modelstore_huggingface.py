@@ -4,54 +4,46 @@ import requests
 from dotenv import load_dotenv
 from huggingface_hub import HfApi
 from torchvision import models
+
 from patra_toolkit import ModelCard, AIModel
 
 load_dotenv()
 
-
 def url_exists(url: str) -> bool:
-    """
-    Checks if a URL exists.
-    Args:
-        url (str): URL to check.
-    Returns:
-        bool: True if the URL exists, False otherwise.
-    """
     try:
-        response = requests.head(url, allow_redirects=True, timeout=10)
-        return response.status_code == 200
+        resp = requests.head(url, allow_redirects=True, timeout=10)
+        return resp.status_code == 200
     except requests.RequestException:
         return False
-
 
 class TestHuggingFaceStore(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.patra_server_url = os.environ.get("PATRA_SERVER_URL")
+        cls.patra_server_url = os.getenv("PATRA_SERVER_URL", "http://127.0.0.1:5002")
         cls.api = HfApi()
-        cls.hf_token = os.environ.get("HF_HUB_TOKEN")
+        cls.hf_token = os.getenv("HF_HUB_TOKEN")
 
     def setUp(self):
-        self.repo_id = "user_model_1.0"
+        self.repo_id = "test_resnet_model_1.0"
 
-        # Prepare ModelCard
+        # Create ModelCard
         self.mc = ModelCard(
-            name="Model",
+            name="ResNetTest",
             version="1.0",
-            short_description="Model",
-            full_description="Model",
-            keywords="model card",
-            author="user",
+            short_description="A test ResNet model",
+            full_description="Testing ResNet model submission",
+            keywords="resnet, test",
+            author="test-user",
             input_type="Image",
             category="classification"
         )
 
         # Attach AIModel to ModelCard
         self.mc.ai_model = AIModel(
-            name="Model",
+            name="TestResNet",
             version="1.0",
-            description="Model",
-            owner="user",
+            description="Sample ResNet model for testing",
+            owner="test-user",
             location="",
             license="Apache-2.0",
             framework="pytorch",
@@ -60,64 +52,69 @@ class TestHuggingFaceStore(unittest.TestCase):
         )
 
     def test_submit_model(self):
-        """
-        Test submitting a model to the model store and Patra server.
-        """
         model = models.resnet50(pretrained=True)
-        model_format = "pt"
-        model_store = "huggingface"
-        model_location = f"https://huggingface.co/nkarthikeyan/{self.repo_id}/blob/main/{self.repo_id}.pt"
-
-        # Submit the model using ModelCard
-        submit_response = self.mc.submit_model(
+        resp = self.mc.submit_model(
             patra_server_url=self.patra_server_url,
             model=model,
-            model_format=model_format,
-            model_store=model_store
+            file_format="pt",
+            model_store="huggingface"
+        )
+        self.assertIsNotNone(resp, "submit_model returned None")
+        self.assertNotIn("error", resp, f"submit_model error: {resp.get('error')}")
+
+        final_model_url = self.mc.ai_model.location
+        self.assertIsNotNone(final_model_url, "No model location found in AIModel")
+
+        self.assertTrue(
+            url_exists(final_model_url),
+            f"Model URL does not exist or is invalid: {final_model_url}"
         )
 
-        # Assertions
-        self.assertIsNotNone(submit_response, "Model submission failed.")
-        self.assertTrue(url_exists(model_location), f"Model URL does not exist: {model_location}")
-
-        # Clean up: delete the repository from Hugging Face
         try:
-            self.api.delete_repo(repo_id=self.repo_id, token=self.hf_token)
+            username = self.mc.credentials["username"]
+            repo_name = self.mc.id.replace(" ", "_")
+            repo_id = f"{username}/{repo_name}"
+            self.api.delete_repo(repo_id=repo_id, token=self.hf_token)
         except Exception as e:
             self.fail(f"Cleanup failed: {e}")
 
     def test_submit_artifact(self):
-        """
-        Test submitting an artifact file to the model store and Patra server.
-        """
-        artifact_file_path = "label.txt"
-        artifact_location = f"https://huggingface.co/nkarthikeyan/{self.repo_id}/blob/main/label.txt"
+        model = models.resnet50(pretrained=True)
+        resp = self.mc.submit_model(
+            patra_server_url=self.patra_server_url,
+            model=model,
+            file_format="pt",
+            model_store="huggingface"
+        )
+        self.assertNotIn("error", resp, f"submit_model error: {resp.get('error')}")
 
-        # Create a temporary artifact file for testing
+        artifact_file_path = "artifact.txt"
+        with open(artifact_file_path, "w") as f:
+            f.write("test artifact data")
+
         try:
-            with open(artifact_file_path, "w") as f:
-                f.write("label1\nlabel2\nlabel3")
+            artifact_resp = self.mc.submit_artifact(artifact_file_path)
+            self.assertIsNotNone(artifact_resp, "submit_artifact returned None")
+            self.assertNotIn("error", artifact_resp, f"submit_artifact error: {artifact_resp.get('error')}")
 
-            # Submit the artifact using ModelCard
-            submit_response = self.mc.submit_artifact(
-                patra_server_url=self.patra_server_url,
-                artifact_path=artifact_file_path,
-                model_store="huggingface"
+            final_model_url = self.mc.ai_model.location
+            artifact_url_base = final_model_url.rsplit('/', 1)[0]
+            final_artifact_url = f"{artifact_url_base}/artifact.txt"
+
+            self.assertTrue(
+                url_exists(final_artifact_url),
+                f"Artifact URL not found or invalid: {final_artifact_url}"
             )
-
-            # Assertions
-            self.assertIsNotNone(submit_response, "Artifact submission failed.")
-            self.assertTrue(url_exists(artifact_location), f"Artifact URL does not exist: {artifact_location}")
-
         finally:
-            # Clean up: delete the repository and remove local file
             try:
-                self.api.delete_repo(repo_id=self.repo_id, token=self.hf_token)
+                username = self.mc.credentials["username"]
+                repo_name = self.mc.id.replace(" ", "_")
+                repo_id = f"{username}/{repo_name}"
                 if os.path.exists(artifact_file_path):
                     os.remove(artifact_file_path)
+                self.api.delete_repo(repo_id=repo_id, token=self.hf_token)
             except Exception as e:
                 self.fail(f"Cleanup failed: {e}")
-
 
 if __name__ == "__main__":
     unittest.main()

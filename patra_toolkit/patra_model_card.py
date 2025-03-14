@@ -7,16 +7,16 @@ from json import JSONEncoder
 from typing import List, Optional, Dict
 from urllib.parse import urlparse, urlunparse
 
-import tensorflow as tf
 import jsonschema
 import pkg_resources
 import requests
+import tensorflow as tf
 import torch
 
-from .exceptions import PatraIDGenerationError, PatraSubmissionError
+from .exceptions import PatraIDGenerationError
 from .fairlearn_bias import BiasAnalyzer
-from .shap_xai import ExplainabilityAnalyser
 from .model_store import get_model_store
+from .shap_xai import ExplainabilityAnalyser
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 logging.basicConfig(level=logging.INFO)
