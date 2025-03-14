@@ -5,6 +5,7 @@ import tempfile
 from dataclasses import dataclass, field
 from json import JSONEncoder
 from typing import List, Optional, Dict
+from urllib.parse import urlparse, urlunparse
 
 import tensorflow as tf
 import jsonschema
@@ -115,6 +116,7 @@ class ModelCard:
     xai_analysis: Optional[object] = None
     model_requirements: Optional[List[str]] = None
     id: Optional[str] = field(init=False, default=None)
+    credentials: Optional[Dict[str, str]] = field(init=False, default=None)
 
     def __str__(self) -> str:
         return json.dumps(self.__dict__, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
@@ -163,115 +165,152 @@ class ModelCard:
             logging.error(f"Unexpected error during validation: {exc}")
             return False
 
-    def _submit_to_store(self, patra_server_url: str, model_store: str, upload_func) -> dict:
-        """
-        Common submission logic for both model and artifact uploads.
-        Validates the model card, checks that the Patra server is reachable,
-        generates a unique ID, invokes the upload function, and submits the model card.
-        """
-        if not patra_server_url:
-            return {"error": "No Patra server URL provided."}
-
-        self.id = self._generate_unique_id(patra_server_url)
-        logging.info(f"PID generated: {self.id}")
-
-        upload_location = None
+    def submit_model(self,
+                     patra_server_url: str,
+                     model,
+                     file_format: str = "pt",
+                     model_store: str = "huggingface",
+                     inference_label: Optional[str] = "") -> dict:
+        if not self.validate():
+            return {"error": "ModelCard validation failed."}
         try:
-            upload_location = upload_func()
-            self.output_data = upload_location.rsplit('/', 3)[0]
-
-            if not self.validate():
-                raise Exception("Model card validation failed.")
-
+            self.id = self._get_model_id(patra_server_url)
+            logging.info(f"Model ID retrieved: {self.id}")
+        except Exception as e:
+            logging.error(f"Model ID creation failed: {e}")
+            return {"error": f"Model ID creation failed: {str(e)}"}
+        try:
+            creds = self._get_credentials(patra_server_url, model_store)
+            self.credentials = {"token": creds.get("token"), "username": creds.get("username", self.author)}
+            logging.info("Repository credentials stored.")
+        except Exception as e:
+            logging.error(f"Credential retrieval failed: {e}")
+            return {"error": f"Credential retrieval failed: {str(e)}"}
+        try:
+            serialized_model = self._serialize_model(model, file_format)
+        except Exception as e:
+            logging.error(f"Model serialization failed: {e}")
+            return {"error": f"Model serialization failed: {str(e)}"}
+        try:
+            backend = get_model_store(model_store.lower())
+            model_upload_location = backend.upload(serialized_model, self.id, self.credentials)
+            logging.info(f"Model uploaded at: {model_upload_location}")
+            self.ai_model.location = model_upload_location
+            self.output_data = self._extract_repository_link(model_upload_location, model_store)
+        except Exception as e:
+            logging.error(f"Model upload failed: {e}")
+            try:
+                backend = get_model_store(model_store.lower())
+                backend.delete_repo(self.id, self.credentials)
+                logging.info("Rollback successful: repository deleted.")
+            except Exception as rollback_err:
+                logging.error(f"Rollback failed: {rollback_err}")
+            return {"error": f"Model upload failed: {str(e)}"}
+        if inference_label:
+            try:
+                backend = get_model_store(model_store.lower())
+                inference_url = backend.upload(inference_label, self.id, self.credentials)
+                self.ai_model.inference_label = inference_url
+                logging.info(f"Inference label uploaded at: {inference_url}")
+            except Exception as e:
+                logging.error(f"Inference label upload failed: {e}")
+                return {"error": f"Inference label upload failed: {str(e)}"}
+        try:
             response = requests.post(
                 f"{patra_server_url}/upload_mc",
                 json=json.loads(str(self)),
                 headers={'Content-Type': 'application/json'}
             )
             response.raise_for_status()
-            logging.info("Model card submitted successfully.")
+            logging.info("Model Card submitted successfully.")
             return response.json()
-        except (PatraIDGenerationError, requests.exceptions.RequestException) as e:
-            logging.error(f"Submission failed: {e}")
-            if upload_location and model_store.lower() in ("huggingface", "github"):
-                try:
-                    backend = get_model_store(model_store.lower())
-                    backend.delete_repo(self.id, patra_server_url)
-                    logging.info("Rollback successful: repository deleted.")
-                except Exception as rollback_err:
-                    logging.error(f"Rollback failed: {rollback_err}")
-            return {"error": f"Submission failed: {str(e)}"}
-
-    def submit_model(self,
-                     patra_server_url: str,
-                     model,
-                     file_format: str = "pt",
-                     model_store: str = "huggingface") -> dict:
-        """
-        Uploads a trained model and submits this ModelCard to the Patra server.
-        Supports serialization of PyTorch models (as .pt or ONNX) and TensorFlow models (as H5).
-        Rolls back repository creation if submission fails.
-        """
-
-        def upload_func(model=model):
-            with tempfile.TemporaryDirectory() as temp_dir:
-                file_name = f"{self.id}.{file_format}"
-                path_in_tmp = os.path.join(temp_dir, file_name)
-
-                if isinstance(model, torch.nn.Module):
-                    if file_format.lower() == "pt":
-                        torch.save(model.state_dict(), path_in_tmp)
-                    elif file_format.lower() == "onnx":
-                        dummy_input = torch.randn(1, 3, 224, 224)
-                        torch.onnx.export(model, dummy_input, path_in_tmp)
-                    elif file_format.lower() == "h5":
-                        raise Exception("h5 format is not supported for PyTorch models. Use 'pt' or 'onnx' instead.")
-                    else:
-                        raise Exception(f"Unsupported format: {file_format}")
-
-                elif tf is not None and isinstance(model, tf.keras.Model):
-                    if file_format.lower() == "h5":
-                        model.save(path_in_tmp, save_format='h5')
-                    else:
-                        raise Exception("For TensorFlow models, only 'h5' format is supported.")
-                else:
-                    raise Exception("Unsupported model type or missing required framework.")
-
+        except Exception as e:
+            logging.error(f"Model Card update failed: {e}")
+            try:
                 backend = get_model_store(model_store.lower())
-                model_location = backend.upload(path_in_tmp, self.id, patra_server_url)
-                logging.info(f"Model stored at: {model_location}")
-                self.ai_model.location = model_location
-                return model_location
+                backend.delete_repo(self.id, self.credentials)
+                requests.post(
+                    f"{patra_server_url}/rollback",
+                    json={"id": self.id},
+                    headers={'Content-Type': 'application/json'}
+                )
+                logging.info("Rollback successful after ModelCard update failure.")
+            except Exception as rollback_err:
+                logging.error(f"Rollback failed: {rollback_err}")
+            return {"error": f"ModelCard update failed: {str(e)}"}
 
-        return self._submit_to_store(patra_server_url, model_store, upload_func)
-
-    def submit_artifact(self, patra_server_url: str, artifact_path: str) -> dict:
-        """
-        Uploads an artifact file using the repository location stored in self.output_data.
-        This method should only be called after submit_model has been successfully executed.
-        It infers the model store from self.output_data and uses the backend's upload method.
-        Credentials are retrieved from the Patra server via patra_server_url.
-        """
+    def submit_artifact(self, artifact_path: str) -> dict:
         if not self.output_data:
-            raise ValueError("No repository location available. Ensure submit_model is called successfully.")
-
+            raise ValueError("No repository location available. Ensure submit_model() is successful.")
         if "huggingface.co" in self.output_data:
-            model_store_name = "huggingface"
+            store = "huggingface"
         elif "github.com" in self.output_data:
-            model_store_name = "github"
+            store = "github"
         else:
-            raise ValueError("Unsupported repository location. Expected a HuggingFace or GitHub URL.")
-
-        backend = get_model_store(model_store_name)
-
+            raise ValueError("Unsupported repository location. Expected HuggingFace or GitHub URL.")
+        backend = get_model_store(store)
         try:
-            artifact_location = backend.upload(artifact_path, self.id, credentials)
+            artifact_location = backend.upload(artifact_path, self.id, self.credentials)
+            logging.info(f"Artifact stored at: {artifact_location}")
+            return {"artifact_location": artifact_location}
         except Exception as e:
             logging.error(f"Artifact upload failed: {e}")
             raise e
 
-        logging.info(f"Artifact stored at: {artifact_location}")
-        return artifact_location
+    def _get_model_id(self, patra_server_url: str) -> str:
+        url = f"{patra_server_url}/get_model_id"
+        response = requests.get(
+            url,
+            params={"author": self.author, "name": self.name, "version": self.version},
+            headers={'Content-Type': 'application/json'}
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def _get_credentials(self, patra_server_url: str, model_store: str) -> Dict[str, str]:
+        endpoint = "/get_huggingface_credentials" if model_store.lower() == "huggingface" else "/get_github_credentials"
+        url = f"{patra_server_url}{endpoint}"
+        response = requests.get(
+            url,
+            params={"author": self.author, "name": self.name, "version": self.version},
+            headers={'Content-Type': 'application/json'}
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def _serialize_model(self, model, file_format: str) -> str:
+        # Use the system temporary directory and construct the filename using self.id.
+        temp_dir = tempfile.gettempdir()
+        path = os.path.join(temp_dir, f"{self.id}.{file_format}")
+        if isinstance(model, torch.nn.Module):
+            if file_format.lower() == "pt":
+                torch.save(model.state_dict(), path)
+            elif file_format.lower() == "onnx":
+                dummy_input = torch.randn(1, 3, 224, 224)
+                torch.onnx.export(model, dummy_input, path)
+            elif file_format.lower() == "h5":
+                raise Exception("h5 format is not supported for PyTorch models. Use 'pt' or 'onnx'.")
+            else:
+                raise Exception(f"Unsupported format: {file_format}")
+        elif tf is not None and isinstance(model, tf.keras.Model):
+            if file_format.lower() == "h5":
+                model.save(path, save_format='h5')
+            else:
+                raise Exception("For TensorFlow models, only 'h5' format is supported.")
+        else:
+            raise Exception("Unsupported model type or missing required framework.")
+        logging.info("Model serialized successfully.")
+        return path
+
+    def _extract_repository_link(self, model_upload_location: str, model_store: str) -> str:
+        parsed = urlparse(model_upload_location)
+        if model_store.lower() == "huggingface":
+            repo_path = parsed.path.split('/blob/')[0] if '/blob/' in parsed.path else parsed.path
+        elif model_store.lower() == "github":
+            repo_path = parsed.path.split('/tree/')[0] if '/tree/' in parsed.path else parsed.path
+        else:
+            repo_path = parsed.path
+        return urlunparse((parsed.scheme, parsed.netloc, repo_path, '', '', ''))
 
     def _generate_unique_id(self, patra_server_url: str) -> str:
         """
