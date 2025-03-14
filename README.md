@@ -105,7 +105,7 @@ mc.submit_model(
     inference_label="labels.txt"
 )
 
-mc.submit_artifact("additional_documentation.pdf")
+mc.submit_artifact(<artifact_path>)
 ```
 
 ## Examples
