@@ -10,42 +10,39 @@
 
 </div>
 
-The Patra Toolkit is a component of the Patra ModelCards framework designed to simplify the process of creating and documenting AI/ML models. It provides a structured schema that guides users in providing essential information about their models, including details about the model's purpose, development process, and performance. The toolkit also includes features for semi-automating the capture of key information, such as fairness and explainability metrics, through integrated analysis tools. By reducing the manual effort involved in creating model cards, the Patra Toolkit encourages researchers and developers to adopt best practices for documenting their models, ultimately contributing to greater transparency and accountability in AI/ML development.
+The **Patra Toolkit** simplifies creating and documenting AI/ML models through a structured schema, encouraging best practices and enhanced transparency. It captures essential metadata—model purpose, development process, performance metrics, fairness, and explainability analyses—and packages them into **Model Cards** that can be integrated into the [Patra Knowledge Base](https://github.com/Data-to-Insight-Center/patra-kg).
 
-## Features 
-
-- **Structured Schema:** The Patra Toolkit offers a structured schema to guide users in providing crucial model information. This includes details such as the model's intended use, development process, and performance metrics.
-  
-- **Semi-Automated Information Capture:** The toolkit supports semi-automatic capture of certain descriptive fields. It achieves this by running a variety of automated scanners, with the results incorporated into the Model Card.  These include,
-    - **Fairness Scanner** evaluates the model's fairness by examining its predictions across different groups. 
-    - **Explainability Scanner** generates explainability metrics to help understand the model's decision-making process.
-    - **Model Requirements Scanner** captures the Python packages and versions required to run the model.
-
-- **Validation and JSON Generation:** Once a Model Card is created using the Toolkit, it validates the data against the defined schema to ensure completeness and accuracy. It then generates the Model Card as a JSON file, ready for integration into the Patra Knowledge Base.
-  
+## Features
+- **Structured Schema** – Helps provide critical model information, including usage, development, and performance.
+- **Semi-Automated Descriptive Fields** – Automated scanners capture fairness, explainability, and environment dependencies:
+  - *Fairness Scanner* – Evaluates predictions across different groups.  
+  - *Explainability Scanner* – Provides interpretability metrics.  
+  - *Model Requirements Scanner* – Records Python packages and versions.
+- **Validation and JSON Generation** – Ensures completeness and correctness before generating the Model Card as JSON.
+- **Backend Storage Support** – Pluggable model store backends enable uploading and retrieving models/artifacts from:
+  - *Hugging Face* – Integrates with Hugging Face Hub for model storage.  
+  - *GitHub* – Leverages GitHub repositories to store serialized models.  
 - **Integration with Patra Knowledge Base:** The Model Cards created using the Patra Toolkit are designed to be added to the [Patra Knowledge Base](https://github.com/Data-to-Insight-Center/patra-kg), which is a graph database that stores and manages these cards.
 
 The Patra Toolkit plays a crucial role in promoting transparency and accountability in AI/ML development by making it easier for developers to create comprehensive and informative Model Cards. By automating certain aspects of the documentation process and providing a structured schema, the Toolkit reduces the barriers to entry for creating high-quality model documentation.
 
 For more information, please refer to the [Patra ModelCards paper](https://ieeexplore.ieee.org/document/10678710).
 
-## Getting Started
 
-#### Installing Patra Model Card
-The latest version can be installed from PyPI:
+## Installation
+
 ```shell
 pip install patra-toolkit
 ```
-
-For local installation, clone the repository and install using:
+For local installation:
 ```shell
-pip install -e <local_git_dir>/patra_toolkit
+git clone https://github.com/Data-to-Insight-Center/patra-toolkit.git
+pip install -e patra-toolkit
 ```
 
 ## Usage
-### Create a Model Card
-Find the descriptions of the Model Card parameters in the [schema descriptions document](./docs/schema_description.md).
 
+### 1. Create a Model Card
 ```python
 from patra_toolkit import ModelCard
 
@@ -53,78 +50,67 @@ mc = ModelCard(
   name="UCI Adult Data Analysis model using Tensorflow",
   version="0.1",
   short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
-  full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
-  keywords="uci adult, tensorflow, explainability, fairness, patra",
+  full_description="ML model predicting income for UCI Adult Dataset with fairness & explainability scans.",
+  keywords="uci adult, tensorflow, fairness, patra, xai",
   author="Sachith Withana",
   input_type="Tabular",
   category="classification",
-  foundational_model="None"
+  citation="Becker, B. & Kohavi, R. (1996). Adult [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5XW20."
 )
 
-# Add Model Metadata
 mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
-mc.output_data = 'https://huggingface.co/Data-to-Insight-Center/UCI-Adult'
 ```
 
-### Initialize an AI/ML Model
-
+### 2. Initialize an AI/ML Model
 ```python
 from patra_toolkit import AIModel
 
 ai_model = AIModel(
   name="UCI Adult Random Forest model",
   version="0.1",
-  description="Census classification problem using Random Forest",
-  owner="Sachith Withana",
-  location="https://github.iu.edu/swithana/mcwork/randomforest/adult_model.pkl",
+  description="Census classification with Random Forest",
+  owner="swithana",
+  location="",
   license="BSD-3 Clause",
   framework="sklearn",
   model_type="random_forest",
-  test_accuracy=accuracy
+  test_accuracy=0.85
 )
 
-# Populate Model Structure
-ai_model.populate_model_structure(trained_model)
-mc.ai_model = ai_model
-
-# Add Custom Metrics
-ai_model.add_metric("Test loss", loss)
 ai_model.add_metric("Epochs", 100)
-ai_model.add_metric("Batch Size", 32)
-ai_model.add_metric("Optimizer", "Adam")
-ai_model.add_metric("Learning Rate", 0.0001)
-ai_model.add_metric("Input Shape", "(26048, 100)")
+ai_model.add_metric("BatchSize", 32)
+mc.ai_model = ai_model
 ```
 
-### Run Fairness and Explainability Scanners
+### 3. Populate Fairness and Explainability
 ```python
-# To assess fairness, provide the sensitive feature, test data, labels, and predictions
 mc.populate_bias(X_test, y_test, predictions, "gender", X_test['sex'], clf)
-
-# To generate explainability metrics, specify the dataset, column names, model, and number of features
-mc.populate_xai(X_test, x_columns, model, top_n=10)
+mc.populate_xai(X_test, columns, clf, n_features=10)
 ```
 
-### Validate and Save the Model Card
-
+### 4. Validate and Save the Model Card
 ```python
-# Verify the model card content against the schema
-mc.validate()
-mc.save( < file_path >)
-
-# Capture Python package dependencies and versions
 mc.populate_requirements()
-
-# Upload the model card to the Patra server
-mc.submit_model() < patra_server_url >)
+mc.validate()
+mc.save("uci_adult_card.json")
 ```
 
----
+### 5. Upload the Model & Artifact
+```python
+mc.submit_model(
+    patra_server_url=<patra_server_url>,
+    model=trained_model,
+    file_format="pt",
+    model_store="huggingface",
+    inference_label="labels.txt"
+)
+
+mc.submit_artifact("additional_documentation.pdf")
+```
+
 ## Examples
 Explore the following example notebooks and model cards to learn more about how to use the Patra Model Card Toolkit:
 [Notebook Example](./examples/notebooks/GettingStarted.ipynb), [Model Card Example](./examples/model_cards/tesorflow_adult_nn_MC.json)
-
----
 
 ## License
 The Patra Model Card toolkit is developed by Indiana University and distributed under the BSD 3-Clause License. See `LICENSE.txt` for more details.
