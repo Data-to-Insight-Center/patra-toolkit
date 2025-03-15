@@ -8,12 +8,14 @@ from patra_toolkit.model_store import get_model_store
 
 load_dotenv()
 
+
 def url_exists(url: str) -> bool:
     try:
         resp = requests.head(url, allow_redirects=True, timeout=10)
         return resp.status_code == 200
     except requests.RequestException:
         return False
+
 
 class TestGitHubStore(unittest.TestCase):
     @classmethod
@@ -49,12 +51,8 @@ class TestGitHubStore(unittest.TestCase):
 
     def test_submit_model(self):
         model = models.resnet18(pretrained=True)
-        resp = self.mc.submit_model(
-            patra_server_url=self.patra_server_url,
-            model=model,
-            file_format="pt",
-            model_store="github"
-        )
+        resp = self.mc.submit(patra_server_url=self.patra_server_url, model=model, file_format="pt",
+                              model_store="github")
         self.assertIsNotNone(resp)
         self.assertNotIn("error", resp, f"submit_model error: {resp.get('error')}")
         final_model_url = self.mc.ai_model.location
@@ -69,12 +67,8 @@ class TestGitHubStore(unittest.TestCase):
 
     def test_submit_artifact(self):
         model = models.resnet18(pretrained=True)
-        resp = self.mc.submit_model(
-            patra_server_url=self.patra_server_url,
-            model=model,
-            file_format="pt",
-            model_store="github"
-        )
+        resp = self.mc.submit(patra_server_url=self.patra_server_url, model=model, file_format="pt",
+                              model_store="github")
         self.assertNotIn("error", resp, f"submit_model error: {resp.get('error')}")
 
         artifact_path = "labels_github.txt"
@@ -97,6 +91,7 @@ class TestGitHubStore(unittest.TestCase):
                 self.github_store.delete_repo(pid=repo_name, credentials=self.mc.credentials)
             except Exception as e:
                 self.fail(f"Cleanup failed: {e}")
+
 
 if __name__ == "__main__":
     unittest.main()

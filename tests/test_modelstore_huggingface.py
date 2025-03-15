@@ -9,12 +9,14 @@ from patra_toolkit import ModelCard, AIModel
 
 load_dotenv()
 
+
 def url_exists(url: str) -> bool:
     try:
         resp = requests.head(url, allow_redirects=True, timeout=10)
         return resp.status_code == 200
     except requests.RequestException:
         return False
+
 
 class TestHuggingFaceStore(unittest.TestCase):
     @classmethod
@@ -53,12 +55,8 @@ class TestHuggingFaceStore(unittest.TestCase):
 
     def test_submit_model(self):
         model = models.resnet50(pretrained=True)
-        resp = self.mc.submit_model(
-            patra_server_url=self.patra_server_url,
-            model=model,
-            file_format="pt",
-            model_store="huggingface"
-        )
+        resp = self.mc.submit(patra_server_url=self.patra_server_url, model=model, file_format="pt",
+                              model_store="huggingface")
         self.assertIsNotNone(resp, "submit_model returned None")
         self.assertNotIn("error", resp, f"submit_model error: {resp.get('error')}")
 
@@ -80,12 +78,8 @@ class TestHuggingFaceStore(unittest.TestCase):
 
     def test_submit_artifact(self):
         model = models.resnet50(pretrained=True)
-        resp = self.mc.submit_model(
-            patra_server_url=self.patra_server_url,
-            model=model,
-            file_format="pt",
-            model_store="huggingface"
-        )
+        resp = self.mc.submit(patra_server_url=self.patra_server_url, model=model, file_format="pt",
+                              model_store="huggingface")
         self.assertNotIn("error", resp, f"submit_model error: {resp.get('error')}")
 
         artifact_file_path = "artifact.txt"
@@ -115,6 +109,7 @@ class TestHuggingFaceStore(unittest.TestCase):
                 self.api.delete_repo(repo_id=repo_id, token=self.hf_token)
             except Exception as e:
                 self.fail(f"Cleanup failed: {e}")
+
 
 if __name__ == "__main__":
     unittest.main()

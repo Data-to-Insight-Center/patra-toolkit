@@ -96,16 +96,16 @@ mc.save("uci_adult_card.json")
 ```
 
 ### 5. Upload the Model & Artifact
+
 ```python
-mc.submit_model(
-    patra_server_url=<patra_server_url>,
-    model=trained_model,
-    file_format="pt",
-    model_store="huggingface",
-    inference_label="labels.txt"
+mc.submit(patra_server_url= < patra_server_url >,
+          model= trained_model,
+          file_format="pt",
+          model_store = "huggingface",
+          inference_label = "labels.txt"
 )
 
-mc.submit_artifact(<artifact_path>)
+mc.submit_artifact( < artifact_path >)
 ```
 
 ## Examples

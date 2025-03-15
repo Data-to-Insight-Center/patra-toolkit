@@ -165,56 +165,86 @@ class ModelCard:
             logging.error(f"Unexpected error during validation: {exc}")
             return False
 
-    def submit_model(self,
-                     patra_server_url: str,
-                     model,
-                     file_format: str = "pt",
-                     model_store: str = "huggingface",
-                     inference_label: Optional[str] = "") -> dict:
+    def submit(self,
+               patra_server_url: str,
+               model: Optional[object],
+               file_format: Optional[str],
+               model_store: Optional[str] = "huggingface",
+               inference_label: Optional[str] = "") -> dict:
+        """
+        Submits the model card to the Patra server and uploads the model to the model store.
+
+        Args:
+            patra_server_url: URL of the Patra server.
+            model: Trained model object.
+            file_format: File format for the serialized model.
+            model_store: Model store to upload the model to (e.g., HuggingFace, GitHub).
+            inference_label: Inference label for the model.
+
+        Returns:
+            Response from the Patra server.
+        """
+
+        # Validate the model card before proceeding.
         if not self.validate():
+            logging.error("ModelCard validation failed.")
             return {"error": "ModelCard validation failed."}
+
+        # Generate a unique model ID.
         try:
             self.id = self._get_model_id(patra_server_url)
             logging.info(f"Model ID retrieved: {self.id}")
         except Exception as e:
             logging.error(f"Model ID creation failed: {e}")
             return {"error": f"Model ID creation failed: {str(e)}"}
-        try:
-            creds = self._get_credentials(patra_server_url, model_store)
-            self.credentials = {"token": creds.get("token"), "username": creds.get("username", self.author)}
-            logging.info("Repository credentials stored.")
-        except Exception as e:
-            logging.error(f"Credential retrieval failed: {e}")
-            return {"error": f"Credential retrieval failed: {str(e)}"}
-        try:
-            serialized_model = self._serialize_model(model, file_format)
-        except Exception as e:
-            logging.error(f"Model serialization failed: {e}")
-            return {"error": f"Model serialization failed: {str(e)}"}
-        try:
-            backend = get_model_store(model_store.lower())
-            model_upload_location = backend.upload(serialized_model, self.id, self.credentials)
-            logging.info(f"Model uploaded at: {model_upload_location}")
-            self.ai_model.location = model_upload_location
-            self.output_data = self._extract_repository_link(model_upload_location, model_store)
-        except Exception as e:
-            logging.error(f"Model upload failed: {e}")
+
+        # Ensure model and file format are provided before proceeding.
+        if model and file_format:
+            # Retrieve credentials from the Patra server.
             try:
-                backend = get_model_store(model_store.lower())
-                backend.delete_repo(self.id, self.credentials)
-                logging.info("Rollback successful: repository deleted.")
-            except Exception as rollback_err:
-                logging.error(f"Rollback failed: {rollback_err}")
-            return {"error": f"Model upload failed: {str(e)}"}
-        if inference_label:
-            try:
-                backend = get_model_store(model_store.lower())
-                inference_url = backend.upload(inference_label, self.id, self.credentials)
-                self.ai_model.inference_label = inference_url
-                logging.info(f"Inference label uploaded at: {inference_url}")
+                creds = self._get_credentials(patra_server_url, model_store)
+                self.credentials = {"token": creds.get("token"), "username": creds.get("username", self.author)}
+                logging.info("Repository credentials stored.")
             except Exception as e:
-                logging.error(f"Inference label upload failed: {e}")
-                return {"error": f"Inference label upload failed: {str(e)}"}
+                logging.error(f"Credential retrieval failed: {e}")
+                return {"error": f"Credential retrieval failed: {str(e)}"}
+
+            # Serialize the model.
+            try:
+                serialized_model = self._serialize_model(model, file_format)
+            except Exception as e:
+                logging.error(f"Model serialization failed: {e}")
+                return {"error": f"Model serialization failed: {str(e)}"}
+
+            # Upload the model to the model store.
+            try:
+                backend = get_model_store(model_store.lower())
+                model_upload_location = backend.upload(serialized_model, self.id, self.credentials)
+                logging.info(f"Model uploaded at: {model_upload_location}")
+                self.ai_model.location = model_upload_location
+                self.output_data = self._extract_repository_link(model_upload_location, model_store)
+            except Exception as e:
+                logging.error(f"Model upload failed: {e}")
+                try:
+                    backend = get_model_store(model_store.lower())
+                    backend.delete_repo(self.id, self.credentials)
+                    logging.info("Rollback successful: repository deleted.")
+                except Exception as rollback_err:
+                    logging.error(f"Rollback failed: {rollback_err}")
+                return {"error": f"Model upload failed: {str(e)}"}
+
+            # Upload the inference label to the model store.
+            if inference_label:
+                try:
+                    backend = get_model_store(model_store.lower())
+                    inference_url = backend.upload(inference_label, self.id, self.credentials)
+                    self.ai_model.inference_label = inference_url
+                    logging.info(f"Inference label uploaded at: {inference_url}")
+                except Exception as e:
+                    logging.error(f"Inference label upload failed: {e}")
+                    return {"error": f"Inference label upload failed: {str(e)}"}
+
+        # Submit the model card to the Patra server.
         try:
             response = requests.post(
                 f"{patra_server_url}/upload_mc",
@@ -225,18 +255,14 @@ class ModelCard:
             logging.info("Model Card submitted successfully.")
             return response.json()
         except Exception as e:
+            # Rollback the model repository if the ModelCard submission fails.
             logging.error(f"Model Card update failed: {e}")
             try:
                 backend = get_model_store(model_store.lower())
                 backend.delete_repo(self.id, self.credentials)
-                requests.post(
-                    f"{patra_server_url}/rollback",
-                    json={"id": self.id},
-                    headers={'Content-Type': 'application/json'}
-                )
                 logging.info("Rollback successful after ModelCard update failure.")
             except Exception as rollback_err:
-                logging.error(f"Rollback failed: {rollback_err}")
+                logging.error(f"Rollback failed: {rollback_err}. Manual cleanup required.")
             return {"error": f"ModelCard update failed: {str(e)}"}
 
     def submit_artifact(self, artifact_path: str) -> dict:
@@ -248,6 +274,7 @@ class ModelCard:
             store = "github"
         else:
             raise ValueError("Unsupported repository location. Expected HuggingFace or GitHub URL.")
+
         backend = get_model_store(store)
         try:
             artifact_location = backend.upload(artifact_path, self.id, self.credentials)
@@ -257,15 +284,16 @@ class ModelCard:
             logging.error(f"Artifact upload failed: {e}")
             raise e
 
-    def _get_model_id(self, patra_server_url: str) -> str:
-        url = f"{patra_server_url}/get_model_id"
-        response = requests.get(
-            url,
-            params={"author": self.author, "name": self.name, "version": self.version},
-            headers={'Content-Type': 'application/json'}
-        )
-        response.raise_for_status()
-        return response.json()
+    def save(self, file_location: str) -> None:
+        """
+        Serializes the model card as JSON to the specified path.
+        """
+        try:
+            with open(file_location, 'w', encoding='utf-8') as json_file:
+                json_file.write(str(self))
+            logging.info(f"Model card saved to {file_location}.")
+        except IOError as io_err:
+            logging.error(f"Failed to save model card: {io_err}")
 
     def _get_credentials(self, patra_server_url: str, model_store: str) -> Dict[str, str]:
         endpoint = "/get_huggingface_credentials" if model_store.lower() == "huggingface" else "/get_github_credentials"
@@ -302,7 +330,11 @@ class ModelCard:
         logging.info("Model serialized successfully.")
         return path
 
-    def _extract_repository_link(self, model_upload_location: str, model_store: str) -> str:
+    @staticmethod
+    def _extract_repository_link(model_upload_location: str, model_store: str) -> str:
+        """
+        Extracts the repository link from the model upload location.
+        """
         parsed = urlparse(model_upload_location)
         if model_store.lower() == "huggingface":
             repo_path = parsed.path.split('/blob/')[0] if '/blob/' in parsed.path else parsed.path
@@ -312,7 +344,7 @@ class ModelCard:
             repo_path = parsed.path
         return urlunparse((parsed.scheme, parsed.netloc, repo_path, '', '', ''))
 
-    def _generate_unique_id(self, patra_server_url: str) -> str:
+    def _get_model_id(self, patra_server_url: str) -> str:
         """
         Retrieves a unique PID from the Patra server based on model metadata.
         """
@@ -321,33 +353,25 @@ class ModelCard:
 
         try:
             response = requests.get(
-                f"{patra_server_url}/get_pid",
+                f"{patra_server_url}/get_model_id",
                 params={"author": self.author, "name": self.name, "version": self.version},
                 headers={'Content-Type': 'application/json'}
             )
             response.raise_for_status()
             return response.json()
-        except requests.exceptions.HTTPError as http_err:
-            msg = f"HTTP {response.status_code} error from server: {response.reason}"
-            logging.error(msg)
-            raise PatraIDGenerationError(msg)
-        except requests.exceptions.ConnectionError:
-            raise PatraIDGenerationError("Connection to Patra server failed.")
-        except requests.exceptions.Timeout:
-            raise PatraIDGenerationError("Request to Patra server timed out.")
-        except requests.exceptions.RequestException as req_exc:
-            raise PatraIDGenerationError(f"Unexpected error: {req_exc}")
 
-    def save(self, file_location: str) -> None:
-        """
-        Serializes the model card as JSON to the specified path.
-        """
-        try:
-            with open(file_location, 'w', encoding='utf-8') as json_file:
-                json_file.write(str(self))
-            logging.info(f"Model card saved to {file_location}.")
-        except IOError as io_err:
-            logging.error(f"Failed to save model card: {io_err}")
+        except requests.exceptions.HTTPError as http_err:
+            logging.error(http_err)
+            raise PatraIDGenerationError(http_err)
+
+        except requests.exceptions.ConnectionError:
+            raise PatraIDGenerationError("Patra server is unreachable.")
+
+        except requests.exceptions.Timeout:
+            raise PatraIDGenerationError("Patra server connection timed out.")
+
+        except requests.exceptions.RequestException as req_exc:
+            raise PatraIDGenerationError(f"Request failed: {req_exc}")
 
 
 class ModelCardJSONEncoder(JSONEncoder):
