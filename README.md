@@ -95,8 +95,14 @@ mc.validate()
 mc.save("uci_adult_card.json")
 ```
 
-### 5. Upload the Model & Artifact
+### 5. Upload ModelCard to Patra Knowledge Base
 
+```python
+mc.submit(patra_server_url = <patra_server_url>)
+```
+
+### [Optional] Upload the trained model to the model store
+#### Uploading to Hugging Face
 ```python
 mc.submit(patra_server_url= < patra_server_url >,
           model= trained_model,
@@ -104,8 +110,15 @@ mc.submit(patra_server_url= < patra_server_url >,
           model_store = "huggingface",
           inference_label = "labels.txt"
 )
-
-mc.submit_artifact( < artifact_path >)
+```
+#### Uploading to GitHub
+```python
+mc.submit(patra_server_url= < patra_server_url >,
+          model= trained_model,
+          file_format="h5",
+          model_store = "github",
+          inference_label = "labels.txt"
+)
 ```
 
 ## Examples
