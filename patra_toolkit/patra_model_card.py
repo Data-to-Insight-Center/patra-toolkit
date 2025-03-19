@@ -197,8 +197,7 @@ class ModelCard:
             logging.error("ModelCard validation failed.")
             return None
 
-        # Determine if a model is provided (uploading_model flag is not used for suppressing conflicts)
-        is_uploading_model = True if model is not None else False
+        is_uploading_model = (model is not None)
 
         try:
             self.id = self._get_model_id(patra_server_url, is_uploading_model)
@@ -297,10 +296,10 @@ class ModelCard:
 
     def _get_model_id(self, patra_server_url: str, is_uploading_model: bool) -> str:
         """
-        Attempts to retrieve a new model ID from the Patra server.
-        If the ID (based on author, name, version) already exists, the function
-        always raises an error to force the user to update the version, regardless
-        of whether they intend to upload a model or just submit artifacts.
+        Retrieves a new model ID from the Patra server based on author, name, and version.
+        If the ID already exists:
+          - If a model is being uploaded (is_uploading_model is True), an error is raised.
+          - If no model is provided (only artifacts or the card), a warning is logged and the existing ID is returned.
         """
         if not patra_server_url:
             raise PatraIDGenerationError("No server URL provided for PID generation.")
@@ -311,10 +310,15 @@ class ModelCard:
                 params={"author": self.author, "name": self.name, "version": self.version},
                 headers={'Content-Type': 'application/json'}
             )
-            if is_uploading_model and response.status_code == 409:
-                raise ValueError(
-                    "Model ID already exists. Please update the version."
-                )
+            if response.status_code == 409:
+                if is_uploading_model:
+                    raise PatraIDGenerationError(
+                        "Model ID already exists. Please update the model version."
+                    )
+                else:
+                    logging.warning("Model ID exists, but no model is being uploaded; continuing with existing ID.")
+                    existing_data = response.json()
+                    return existing_data.get("pid", "unknown-id")
             response.raise_for_status()
             id_data = response.json()
             return id_data["pid"]
