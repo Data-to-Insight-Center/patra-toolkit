@@ -101,7 +101,9 @@ mc.save("uci_adult_card.json")
 mc.submit(patra_server_url = <patra_server_url>)
 ```
 
-### Upload the trained model to a model repository
+### [Optional] Upload the trained model to a model repository
+Default to huggingface
+
 #### Uploading to Hugging Face
 ```python
 mc.submit(patra_server_url = <patra_server_url>,
@@ -122,8 +124,9 @@ mc.submit(patra_server_url = <patra_server_url>,
 ```
 
 ### Uploading the model artifacts to a model repository
+
 ```python
-mc.submit_artifact(<artifact_path>)
+mc.submit_artifact() < artifact_path >)
 ```
 
 ## Examples
