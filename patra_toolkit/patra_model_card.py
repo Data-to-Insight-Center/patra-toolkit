@@ -1,17 +1,19 @@
 import json
 import logging
 import os.path
+import tempfile
 from dataclasses import dataclass, field
 from json import JSONEncoder
 from typing import List, Optional, Dict
+from urllib.parse import urlparse, urlunparse
 
 import jsonschema
 import pkg_resources
 import requests
 
 from .exceptions import PatraIDGenerationError
-from .exceptions import PatraSubmissionError
 from .fairlearn_bias import BiasAnalyzer
+from .model_store import get_model_store, ensure_package_installed
 from .shap_xai import ExplainabilityAnalyser
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
@@ -73,6 +75,7 @@ class AIModel:
     framework: str
     model_type: str
     test_accuracy: float
+    inference_label: Optional[str] = ""
     model_structure: Optional[object] = field(default_factory=dict)
     metrics: Dict[str, str] = field(default_factory=dict)
 
@@ -220,6 +223,7 @@ class ModelCard:
     author: str
     input_type: str
     category: str
+    citation: Optional[str] = ""
     input_data: Optional[str] = ""
     output_data: Optional[str] = ""
     foundational_model: Optional[str] = ""
@@ -228,6 +232,7 @@ class ModelCard:
     xai_analysis: Optional[object] = None
     model_requirements: Optional[List[str]] = None
     id: Optional[str] = field(init=False, default=None)
+    credentials: Optional[Dict[str, str]] = field(init=False, default=None)
 
     def __str__(self) -> str:
         """
@@ -308,71 +313,186 @@ class ModelCard:
             logging.error(f"Unexpected error during validation: {exc}")
             return False
 
-    def submit(self, patra_server_url: str) -> dict:
+    def submit(
+            self,
+            patra_server_url: str,
+            model: Optional[object] = None,
+            file_format: Optional[str] = "h5",
+            model_store: Optional[str] = "huggingface",
+            inference_label: Optional[str] = None,
+            artifacts: Optional[List[str]] = None
+    ):
         """
-        Validates and submits the model card to the specified Patra server.
+        Submits the model card to the Patra server, optionally uploading the model and artifacts.
 
         Args:
-            patra_server_url (str): The Patra server URL for model card submission.
+            patra_server_url (str): The URL of the Patra server.
+            model (object): The trained model to be uploaded.
+            file_format (str): The format in which the model will be saved (default: "h5").
+            model_store (str): The model store to use for uploading the model (default: "huggingface").
+            inference_label (str): The inference label to be uploaded.
+            artifacts (List[str]): List of artifacts to be uploaded.
 
         Returns:
-            dict: The server's JSON response on success, or an error message on failure.
-        """
-        if not patra_server_url:
-            logging.error("No Patra server URL provided.")
-            return {"error": "No Patra server URL provided."}
+            str: "success" if the submission is successful, None otherwise.
 
+        Example:
+            .. code-block:: python
+
+                model_card.submit(
+                    patra_server_url="http://localhost:5002",
+                    model=model,
+                    file_format="h5",
+                    model_store="huggingface",
+                    inference_label="inference_label.json",
+                    artifacts=["requirements.txt", "README.md"]
+                )
+        """
+        # Validate the model card before submission
         if not self.validate():
-            logging.error("Model card validation failed; submission aborted.")
-            return {"error": "Model card validation failed."}
+            logging.error("ModelCard validation failed.")
+            return None
 
+        # Retrieve model ID from the Patra server
+        is_uploading_model = (model is not None)
         try:
-            self.id = self._generate_unique_id(patra_server_url)
-            submit_url = f"{patra_server_url}/upload_mc"
-            headers = {'Content-Type': 'application/json'}
-            response = requests.post(submit_url, json=json.loads(str(self)), headers=headers)
+            self.id = self._get_model_id(patra_server_url, is_uploading_model)
+            logging.info(f"Model ID retrieved: {self.id}")
+        except PatraIDGenerationError as pid_exc:
+            logging.error(f"Model submission failed during model ID creation: {pid_exc}")
+            return None
+        except Exception as e:
+            logging.error(f"Model submission failed during model ID creation: {e}")
+            return None
+
+        # Upload model, inference label, and artifacts if requested
+        model_upload_location = None
+        inference_url = None
+        artifact_locations = []
+        upload_requested = any([model, inference_label, artifacts])
+
+        if upload_requested:
+            # Retrieve credentials for model upload
+            try:
+                creds = self._get_credentials(patra_server_url, model_store)
+                self.credentials = {"token": creds.get("token"), "username": creds.get("username")}
+            except Exception as e:
+                logging.error(f"Model submission failed during credential retrieval: {e}")
+                return None
+
+            # Serialize and upload the model
+            if model is not None:
+                try:
+                    if file_format.lower() == "h5":
+                        ensure_package_installed("tensorflow")
+                    elif file_format.lower() in ["pt", "onnx"]:
+                        ensure_package_installed("torch")
+                    serialized_model = self._serialize_model(model, file_format)
+                except Exception as e:
+                    logging.error(f"Model submission failed during model serialization: {e}")
+                    return None
+
+                # Upload the model to the specified model store
+                backend = get_model_store(model_store.lower())
+                try:
+                    model_upload_location = backend.upload(serialized_model, self.id, self.credentials)
+                    logging.info(f"Model uploaded at: {model_upload_location}")
+                    self.ai_model.location = model_upload_location
+                    self.output_data = self._extract_repository_link(model_upload_location, model_store)
+                except Exception as e:
+                    logging.error(f"Model submission failed during model upload: {e}")
+                    try:
+                        backend.delete_repo(self.id, self.credentials)
+                        logging.info("Rollback successful: repository deleted.")
+                    except Exception as rollback_err:
+                        logging.error(f"Rollback failed: {rollback_err}")
+                    return None
+
+            # Upload the inference label and artifacts
+            if inference_label is not None:
+                try:
+                    backend = get_model_store(model_store.lower())
+                    if model_store.lower() == "huggingface":
+                        ensure_package_installed("huggingface_hub")
+                    elif model_store.lower() == "github":
+                        ensure_package_installed("PyGithub", "github")
+                    inference_url = backend.upload(inference_label, self.id, self.credentials)
+                    self.ai_model.inference_label = inference_url
+                    logging.info(f"Inference label uploaded at: {inference_url}")
+                except Exception as e:
+                    logging.error(f"Model submission failed during inference label upload: {e}")
+                    return None
+
+            # Upload artifacts
+            if artifacts is not None:
+                try:
+                    backend = get_model_store(model_store.lower())
+                    for artifact in artifacts:
+                        loc = backend.upload(artifact, self.id, self.credentials)
+                        logging.info(f"Artifact '{artifact}' uploaded at: {loc}")
+                        artifact_locations.append(loc)
+                except Exception as e:
+                    logging.error(f"Model submission failed during artifact upload: {e}")
+                    return None
+
+        # Submit the model card to the Patra server
+        try:
+            submission_payload = json.loads(str(self))
+            response = requests.post(
+                f"{patra_server_url}/upload_mc",
+                json=submission_payload,
+                headers={'Content-Type': 'application/json'}
+            )
             response.raise_for_status()
-            logging.info("Model card submitted successfully.")
-            return response.json()
-        except PatraIDGenerationError as pid_err:
-            raise PatraSubmissionError(f"Unique ID not generated: {pid_err}")
-        except requests.exceptions.RequestException as req_err:
-            raise PatraSubmissionError(f"Patra server submission failed: {req_err}")
+            logging.info("Model Card submitted successfully.")
+            return "success"
+        except Exception as e:
+            logging.error(f"Model submission failed during ModelCard submission: {e}")
+            if upload_requested:
+                try:
+                    backend = get_model_store(model_store.lower())
+                    backend.delete_repo(self.id, self.credentials)
+                    logging.info("Rollback successful after ModelCard submission failure.")
+                except Exception as rollback_err:
+                    logging.error(f"Rollback failed: {rollback_err}. Manual cleanup required.")
+            return None
 
-    def _generate_unique_id(self, patra_server_url: str) -> str:
+    def _get_model_id(self, patra_server_url: str, is_uploading_model: bool) -> str:
         """
-        Generates a unique identifier for the model card based on its metadata.
-
-        Args:
-            patra_server_url (str): The Patra server URL used to generate the ID.
-
-        Returns:
-            str: A unique identifier for the model card.
-
-        Raises:
-            PatraIDGenerationError: If the server fails to generate an ID or returns an error.
+        Retrieves a new model ID from the Patra server based on author, name, and version.
+        If the ID already exists:
+          - If a model is being uploaded (is_uploading_model is True), an error is raised.
+          - If no model is provided (only artifacts or the card), a warning is logged and the existing ID is returned.
         """
-        combined_string = f"{self.name}:{self.version}:{self.author}"
+        # Ensure a server URL is provided
         if not patra_server_url:
-            raise PatraIDGenerationError("No server URL provided for ID generation.")
+            raise PatraIDGenerationError("No server URL provided for PID generation.")
 
+        # Attempt to retrieve the model ID from the server
         try:
-            hash_url = f"{patra_server_url}/get_hash_id"
-            headers = {'Content-Type': 'application/json'}
-            params = {"author": self.author, "name": self.name, "version": self.version}
-            response = requests.get(hash_url, params=params, headers=headers)
+            response = requests.get(
+                f"{patra_server_url}/get_model_id",
+                params={"author": self.author, "name": self.name, "version": self.version},
+                headers={'Content-Type': 'application/json'}
+            )
+            if response.status_code == 409:
+                if is_uploading_model:
+                    raise PatraIDGenerationError(
+                        "Model ID already exists. Please update the model version."
+                    )
+                else:
+                    logging.warning("Model ID exists, but no model is being uploaded; continuing with existing ID.")
+                    existing_data = response.json()
+                    return existing_data.get("pid", "unknown-id")
             response.raise_for_status()
-            return response.json()
-        except requests.exceptions.HTTPError as http_err:
-            msg = f"HTTP {response.status_code} error from server: {response.reason}"
-            logging.error(msg)
-            raise PatraIDGenerationError(msg)
+            id_data = response.json()
+            return id_data["pid"]
         except requests.exceptions.ConnectionError:
-            raise PatraIDGenerationError("Connection to Patra server failed.")
+            raise PatraIDGenerationError("Patra server is unreachable.")
         except requests.exceptions.Timeout:
-            raise PatraIDGenerationError("Request to Patra server timed out.")
+            raise PatraIDGenerationError("Patra server connection timed out.")
         except requests.exceptions.RequestException as req_exc:
-            raise PatraIDGenerationError(f"Unexpected error: {req_exc}")
+            raise PatraIDGenerationError(f"Request failed: {req_exc}")
 
     def save(self, file_location: str) -> None:
         """
@@ -387,6 +507,81 @@ class ModelCard:
             logging.info(f"Model card saved to {file_location}.")
         except IOError as io_err:
             logging.error(f"Failed to save model card: {io_err}")
+
+    def _get_credentials(self, patra_server_url: str, model_store: str) -> Dict[str, str]:
+        endpoint = "/get_huggingface_credentials" if model_store.lower() == "huggingface" else "/get_github_credentials"
+        url = f"{patra_server_url}{endpoint}"
+        response = requests.get(
+            url,
+            params={"author": self.author, "name": self.name, "version": self.version},
+            headers={'Content-Type': 'application/json'}
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def _serialize_model(self, model, file_format: str) -> str:
+        temp_dir = tempfile.gettempdir()
+        path = os.path.join(temp_dir, f"{self.id}.{file_format}")
+
+        # Lazy imports for torch and tensorflow
+        torch_module = None
+        tf_module = None
+        try:
+            import torch
+            torch_module = torch
+        except ImportError:
+            torch_module = ensure_package_installed("torch")
+        try:
+            import tensorflow as tf_mod
+            tf_module = tf_mod
+        except ImportError:
+            tf_module = ensure_package_installed("tensorflow")
+
+        # If using PyTorch, perform a lazy import of torch.nn as torch_nn
+        if torch_module is not None:
+            try:
+                from torch import nn as torch_nn
+            except ImportError:
+                torch_nn = None
+        else:
+            torch_nn = None
+
+        # PyTorch model branch
+        if torch_module is not None and torch_nn is not None and isinstance(model, torch_nn.Module):
+            # Allow saving state_dict to either "pt" or "h5"
+            if file_format.lower() in ["pt", "h5"]:
+                torch_module.save(model.state_dict(), path)
+            elif file_format.lower() == "onnx":
+                dummy_input = torch_module.randn(1, 3, 224, 224)
+                torch_module.onnx.export(model, dummy_input, path)
+            else:
+                raise Exception(f"Unsupported format for PyTorch models: '{file_format}'")
+        # TensorFlow model branch
+        elif tf_module is not None and isinstance(model, tf_module.keras.Model):
+            if file_format.lower() == "h5":
+                model.save(path, save_format='h5')
+            else:
+                raise Exception("For TensorFlow models, only 'h5' format is supported.")
+        else:
+            raise Exception("Unsupported model type or missing required framework.")
+
+        logging.info("Model serialized successfully.")
+        return path
+
+    @staticmethod
+    def _extract_repository_link(model_upload_location: str, model_store: str) -> str:
+        """
+        Extracts the repository link from the model upload location.
+        """
+        parsed = urlparse(model_upload_location)
+        if model_store.lower() == "huggingface":
+            repo_path = parsed.path.split('/blob/')[0] if '/blob/' in parsed.path else parsed.path
+        elif model_store.lower() == "github":
+            repo_path = parsed.path.split('/tree/')[0] if '/tree/' in parsed.path else parsed.path
+        else:
+            repo_path = parsed.path
+        return urlunparse((parsed.scheme, parsed.netloc, repo_path, '', '', ''))
+
 
 class ModelCardJSONEncoder(JSONEncoder):
     """

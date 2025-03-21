@@ -1,5 +1,5 @@
 <div align="center">
-  
+
 # Patra Model Card Toolkit
 
 [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://patra-toolkit.readthedocs.io/en/latest/)
@@ -12,22 +12,24 @@
 
 The Patra Toolkit is a component of the Patra ModelCards framework designed to simplify the process of creating and documenting AI/ML models. It provides a structured schema that guides users in providing essential information about their models, including details about the model's purpose, development process, and performance. The toolkit also includes features for semi-automating the capture of key information, such as fairness and explainability metrics, through integrated analysis tools. By reducing the manual effort involved in creating model cards, the Patra Toolkit encourages researchers and developers to adopt best practices for documenting their models, ultimately contributing to greater transparency and accountability in AI/ML development.
 
-## Features 
+---
 
-- **Structured Schema:** The Patra Toolkit offers a structured schema to guide users in providing crucial model information. This includes details such as the model's intended use, development process, and performance metrics.
-  
-- **Semi-Automated Information Capture:** The toolkit supports semi-automatic capture of certain descriptive fields. It achieves this by running a variety of automated scanners, with the results incorporated into the Model Card.  These include,
-    - **Fairness Scanner** evaluates the model's fairness by examining its predictions across different groups. 
-    - **Explainability Scanner** generates explainability metrics to help understand the model's decision-making process.
-    - **Model Requirements Scanner** captures the Python packages and versions required to run the model.
+## Features
 
-- **Validation and JSON Generation:** Once a Model Card is created using the Toolkit, it validates the data against the defined schema to ensure completeness and accuracy. It then generates the Model Card as a JSON file, ready for integration into the Patra Knowledge Base.
-  
-- **Integration with Patra Knowledge Base:** The Model Cards created using the Patra Toolkit are designed to be added to the [Patra Knowledge Base](https://github.com/Data-to-Insight-Center/patra-kg), which is a graph database that stores and manages these cards.
+1. **Encourages Accountability**  
+   - Incorporate essential model information (metadata, dataset details, fairness, explainability) at training time, ensuring AI models remain transparent from development to deployment.
 
-The Patra Toolkit plays a crucial role in promoting transparency and accountability in AI/ML development by making it easier for developers to create comprehensive and informative Model Cards. By automating certain aspects of the documentation process and providing a structured schema, the Toolkit reduces the barriers to entry for creating high-quality model documentation.
+2. **Semi-Automated Capture**  
+   - Automated *Fairness* and *Explainability* scanners compute demographic parity, equal odds, SHAP-based feature importances, etc., for easy integration into Model Cards.
 
-For more information, please refer to the [Patra ModelCards paper](https://ieeexplore.ieee.org/document/10678710).
+3. **Machine-Actionable Model Cards**  
+   - Produce a structured JSON representation for ingestion into the Patra Knowledge Base. Ideal for advanced queries on model selection, provenance, versioning, or auditing.
+
+4. **Flexible Repository Support**  
+   - Pluggable backends for storing models/artifacts on **Hugging Face** or **GitHub**, unifying the model publishing workflow.
+
+5. **Versioning & Model Relationship Tracking**  
+   - Maintain multiple versions of a model with recognized edges (e.g., `revisionOf`, `alternateOf`) using embedding-based similarity. This ensures clear lineages and easy forward/backward provenance.
 
 ## Getting Started
 
@@ -107,23 +109,36 @@ mc.populate_xai(X_test, x_columns, model, top_n=10)
 
 ### Validate and Save the Model Card
 ```python
-# Verify the model card content against the schema
-mc.validate()
-mc.save(<file_path>)
-
 # Capture Python package dependencies and versions
 mc.populate_requirements()
 
-# Upload the model card to the Patra server
-mc.submit(<patra_server_url>)
+# Verify the model card content against the schema
+mc.validate()
+mc.save(<file_path>)
 ```
 
+## Submit
+
+Use mc.submit() to register only a model card, an AI model along with the model card, just the artifacts, or all at once!
+
+```python
+mc.submit(
+    patra_server_url=<patra_server_url>,
+    model=<trained_model>,
+    file_format="pt", # or "h5"
+    model_store="huggingface", # or "github"
+    inference_label="labels.txt",
+    artifacts=[<artifact1_path>, <artifact2_path>]
+)
+```
+ 
+If a name-version conflict arises, increment mc.version. In case of failure, submit() attempts partial rollbacks to avoid orphaned uploads.
+
 ---
+
 ## Examples
 Explore the following example notebooks and model cards to learn more about how to use the Patra Model Card Toolkit:
 [Notebook Example](./examples/notebooks/GettingStarted.ipynb), [Model Card Example](./examples/model_cards/tesorflow_adult_nn_MC.json)
-
----
 
 ## License
 The Patra Model Card toolkit is developed by Indiana University and distributed under the BSD 3-Clause License. See `LICENSE.txt` for more details.
