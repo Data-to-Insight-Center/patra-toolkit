@@ -323,15 +323,38 @@ class ModelCard:
             artifacts: Optional[List[str]] = None
     ):
         """
-        Submits the ModelCard along with optional components to the Patra server
-        and the specified model store.
+        Submits the model card to the Patra server, optionally uploading the model and artifacts.
+
+        Args:
+            patra_server_url (str): The URL of the Patra server.
+            model (object): The trained model to be uploaded.
+            file_format (str): The format in which the model will be saved (default: "h5").
+            model_store (str): The model store to use for uploading the model (default: "huggingface").
+            inference_label (str): The inference label to be uploaded.
+            artifacts (List[str]): List of artifacts to be uploaded.
+
+        Returns:
+            str: "success" if the submission is successful, None otherwise.
+
+        Example:
+            .. code-block:: python
+
+                model_card.submit(
+                    patra_server_url="http://localhost:5002",
+                    model=model,
+                    file_format="h5",
+                    model_store="huggingface",
+                    inference_label="inference_label.json",
+                    artifacts=["requirements.txt", "README.md"]
+                )
         """
+        # Validate the model card before submission
         if not self.validate():
             logging.error("ModelCard validation failed.")
             return None
 
+        # Retrieve model ID from the Patra server
         is_uploading_model = (model is not None)
-
         try:
             self.id = self._get_model_id(patra_server_url, is_uploading_model)
             logging.info(f"Model ID retrieved: {self.id}")
@@ -342,12 +365,14 @@ class ModelCard:
             logging.error(f"Model submission failed during model ID creation: {e}")
             return None
 
+        # Upload model, inference label, and artifacts if requested
         model_upload_location = None
         inference_url = None
         artifact_locations = []
         upload_requested = any([model, inference_label, artifacts])
 
         if upload_requested:
+            # Retrieve credentials for model upload
             try:
                 creds = self._get_credentials(patra_server_url, model_store)
                 self.credentials = {"token": creds.get("token"), "username": creds.get("username")}
@@ -355,6 +380,7 @@ class ModelCard:
                 logging.error(f"Model submission failed during credential retrieval: {e}")
                 return None
 
+            # Serialize and upload the model
             if model is not None:
                 try:
                     if file_format.lower() == "h5":
@@ -366,6 +392,7 @@ class ModelCard:
                     logging.error(f"Model submission failed during model serialization: {e}")
                     return None
 
+                # Upload the model to the specified model store
                 backend = get_model_store(model_store.lower())
                 try:
                     model_upload_location = backend.upload(serialized_model, self.id, self.credentials)
@@ -381,6 +408,7 @@ class ModelCard:
                         logging.error(f"Rollback failed: {rollback_err}")
                     return None
 
+            # Upload the inference label and artifacts
             if inference_label is not None:
                 try:
                     backend = get_model_store(model_store.lower())
@@ -395,6 +423,7 @@ class ModelCard:
                     logging.error(f"Model submission failed during inference label upload: {e}")
                     return None
 
+            # Upload artifacts
             if artifacts is not None:
                 try:
                     backend = get_model_store(model_store.lower())
@@ -406,6 +435,7 @@ class ModelCard:
                     logging.error(f"Model submission failed during artifact upload: {e}")
                     return None
 
+        # Submit the model card to the Patra server
         try:
             submission_payload = json.loads(str(self))
             response = requests.post(
@@ -434,9 +464,11 @@ class ModelCard:
           - If a model is being uploaded (is_uploading_model is True), an error is raised.
           - If no model is provided (only artifacts or the card), a warning is logged and the existing ID is returned.
         """
+        # Ensure a server URL is provided
         if not patra_server_url:
             raise PatraIDGenerationError("No server URL provided for PID generation.")
 
+        # Attempt to retrieve the model ID from the server
         try:
             response = requests.get(
                 f"{patra_server_url}/get_model_id",

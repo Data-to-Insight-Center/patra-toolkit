@@ -1,5 +1,5 @@
 <div align="center">
-  
+
 # Patra Model Card Toolkit
 
 [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://patra-toolkit.readthedocs.io/en/latest/)
@@ -10,124 +10,152 @@
 
 </div>
 
-The **Patra Toolkit** simplifies creating and documenting AI/ML models through a structured schema, encouraging best practices and enhanced transparency. It captures essential metadata—model purpose, development process, performance metrics, fairness, and explainability analyses—and packages them into **Model Cards** that can be integrated into the [Patra Knowledge Base](https://github.com/Data-to-Insight-Center/patra-kg).
+The Patra Toolkit is a component of the Patra ModelCards framework designed to simplify the process of creating and documenting AI/ML models. It provides a structured schema that guides users in providing essential information about their models, including details about the model's purpose, development process, and performance. The toolkit also includes features for semi-automating the capture of key information, such as fairness and explainability metrics, through integrated analysis tools. By reducing the manual effort involved in creating model cards, the Patra Toolkit encourages researchers and developers to adopt best practices for documenting their models, ultimately contributing to greater transparency and accountability in AI/ML development.
+
+---
 
 ## Features
-- **Structured Schema** – Helps provide critical model information, including usage, development, and performance.
-- **Semi-Automated Descriptive Fields** – Automated scanners capture fairness, explainability, and environment dependencies:
-  - *Fairness Scanner* – Evaluates predictions across different groups.  
-  - *Explainability Scanner* – Provides interpretability metrics.  
-  - *Model Requirements Scanner* – Records Python packages and versions.
-- **Validation and JSON Generation** – Ensures completeness and correctness before generating the Model Card as JSON.
-- **Backend Storage Support** – Pluggable model store backends enable uploading and retrieving models/artifacts from:
-  - *Hugging Face* – Integrates with Hugging Face Hub for model storage.  
-  - *GitHub* – Leverages GitHub repositories to store serialized models.  
-- **Integration with Patra Knowledge Base:** The Model Cards created using the Patra Toolkit are designed to be added to the [Patra Knowledge Base](https://github.com/Data-to-Insight-Center/patra-kg), which is a graph database that stores and manages these cards.
 
-The Patra Toolkit plays a crucial role in promoting transparency and accountability in AI/ML development by making it easier for developers to create comprehensive and informative Model Cards. By automating certain aspects of the documentation process and providing a structured schema, the Toolkit reduces the barriers to entry for creating high-quality model documentation.
+1. **Encourages Accountability**  
+   - Incorporate essential model information (metadata, dataset details, fairness, explainability) at training time, ensuring AI models remain transparent from development to deployment.
 
-For more information, please refer to the [Patra ModelCards paper](https://ieeexplore.ieee.org/document/10678710).
+2. **Semi-Automated Capture**  
+   - Automated *Fairness* and *Explainability* scanners compute demographic parity, equal odds, SHAP-based feature importances, etc., for easy integration into Model Cards.
 
+3. **Machine-Actionable Model Cards**  
+   - Produce a structured JSON representation for ingestion into the Patra Knowledge Base. Ideal for advanced queries on model selection, provenance, versioning, or auditing.
 
-## Installation
+4. **Flexible Repository Support**  
+   - Pluggable backends for storing models/artifacts on **Hugging Face** or **GitHub**, unifying the model publishing workflow.
 
-```shell
-pip install patra-toolkit
-```
-For local installation:
-```shell
-git clone https://github.com/Data-to-Insight-Center/patra-toolkit.git
-pip install -e patra-toolkit
-```
+5. **Versioning & Model Relationship Tracking**  
+   - Maintain multiple versions of a model with recognized edges (e.g., `revisionOf`, `alternateOf`) using embedding-based similarity. This ensures clear lineages and easy forward/backward provenance.
 
-## Usage
+---
 
-### 1. Create a Model Card
+## 1. Create a Model Card
+
 ```python
 from patra_toolkit import ModelCard
 
 mc = ModelCard(
-  name="UCI Adult Data Analysis model using Tensorflow",
-  version="0.1",
-  short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
-  full_description="ML model predicting income for UCI Adult Dataset with fairness & explainability scans.",
-  keywords="uci adult, tensorflow, fairness, patra, xai",
-  author="Sachith Withana",
-  input_type="Tabular",
-  category="classification",
-  citation="Becker, B. & Kohavi, R. (1996). Adult [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5XW20."
+    name="MyModel",
+    version="0.1",
+    short_description="A demonstration Model Card",
+    full_description="Trains a basic PyTorch classification model.",
+    keywords="classification, demonstration",
+    author="my-user",
+    input_type="Tabular",
+    category="classification"
 )
-
-mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
 ```
+Use the `ModelCard` constructor to capture high-level information: model name, version, short/full descriptions, domain category, and references.
 
-### 2. Initialize an AI/ML Model
+---
+
+## 2. Initialize an AI/ML Model
+
 ```python
 from patra_toolkit import AIModel
 
 ai_model = AIModel(
-  name="UCI Adult Random Forest model",
-  version="0.1",
-  description="Census classification with Random Forest",
-  owner="swithana",
-  location="",
-  license="BSD-3 Clause",
-  framework="sklearn",
-  model_type="random_forest",
-  test_accuracy=0.85
+    name="MyTorchModel",
+    version="0.1",
+    description="PyTorch DNN",
+    owner="my-user",
+    location="",  # Will be filled upon upload
+    license="Apache-2.0",
+    framework="pytorch",
+    model_type="dnn",
+    test_accuracy=0.83
 )
 
-ai_model.add_metric("Epochs", 100)
-ai_model.add_metric("BatchSize", 32)
+# Optionally, add more performance or training metrics
+ai_model.add_metric("Epochs", 10)
+ai_model.add_metric("BatchSize", 64)
+ai_model.add_metric("Optimizer", "Adam")
+```
+
+Attach the `AIModel` object to your `ModelCard`:
+
+```python
 mc.ai_model = ai_model
 ```
 
-### 3. Populate Fairness and Explainability
-```python
-mc.populate_bias(X_test, y_test, predictions, "gender", X_test['sex'], clf)
-mc.populate_xai(X_test, columns, clf, n_features=10)
-```
+---
 
-### 4. Validate and Save the Model Card
+## 3. Populate Fairness and Explainability
+
+### 3.1 Fairness (Bias) Analysis
+
+```python
+y_pred = trained_model.predict(X_test)
+y_pred = (y_pred >= 0.5).flatten()
+
+mc.populate_bias(
+    X_test,
+    y_test,
+    y_pred,
+    "ProtectedFeatureName",
+    X_test[:, <index_of_sensitive_feature>],
+    trained_model
+)
+
+print("Bias Analysis:", mc.bias_analysis)
+```
+Often includes demographic parity difference and equal odds difference.
+
+### 3.2 Explainability (XAI)
+
+```python
+column_names = df.columns.tolist()
+column_names.remove('target')
+
+mc.populate_xai(
+    X_test[:10],
+    column_names,
+    trained_model
+)
+
+print("Explainability Analysis:", mc.xai_analysis)
+```
+Leverages SHAP (by default) to compute feature importance, stored in `mc.xai_analysis`.
+
+---
+
+## 4. Validate and Save the Model Card
+
 ```python
 mc.populate_requirements()
-mc.validate()
-mc.save("uci_adult_card.json")
-```
 
-### 5. Upload ModelCard to Patra Knowledge Base
+if mc.validate():
+    print("Model Card validated successfully.")
+    mc.save("my_model_card.json")
+else:
+    print("Validation failed.")
+```
+`s mc.save()` writes the final JSON to disk for version control or further editing.
+
+---
+
+## 5. Submit
+
+`mc.submit(...)` lets you post your Model Card and optionally your trained model, inference labels, or artifacts to a repository (Hugging Face or GitHub) while registering the card on the Patra server.
 
 ```python
-mc.submit(patra_server_url = <patra_server_url>)
-```
-
-### [Optional] Upload the trained model to a model repository
-Default to huggingface
-
-#### Uploading to Hugging Face
-```python
-mc.submit(patra_server_url = <patra_server_url>,
-          model= trained_model,
-          file_format="pt",
-          model_store = "huggingface",
-          inference_label = "labels.txt"
-)
-```
-#### Uploading to GitHub
-```python
-mc.submit(patra_server_url = <patra_server_url>,
-          model= trained_model,
-          file_format="h5",
-          model_store = "github",
-          inference_label = "labels.txt"
+mc.submit(
+    patra_server_url=<patra_server_url>,
+    model=<trained_model>,
+    file_format="pt",
+    model_store="huggingface",
+    inference_label="labels.txt",
+    artifacts=["data/train.csv", "docs/config.yaml"]
 )
 ```
 
-### Uploading the model artifacts to a model repository
+If an ID conflict arises (model already exists), increment `mc.version` and resubmit.
 
-```python
-mc.submit_artifact() < artifact_path >)
-```
+---
 
 ## Examples
 Explore the following example notebooks and model cards to learn more about how to use the Patra Model Card Toolkit:
