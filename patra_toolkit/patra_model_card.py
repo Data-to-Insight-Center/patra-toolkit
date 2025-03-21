@@ -19,15 +19,17 @@ from .shap_xai import ExplainabilityAnalyser
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 logging.basicConfig(level=logging.INFO)
 
-
 @dataclass
 class Metric:
     """
     Data class for storing metric key-value pairs.
+
+    Args:
+        key (str): The name of the metric.
+        value (str): The value of the metric.
     """
     key: str
     value: str
-
 
 @dataclass
 class AIModel:
@@ -63,7 +65,6 @@ class AIModel:
                 model_structure={},
                 metrics={"accuracy": "0.95"}
             )
-
     """
     name: str
     version: str
@@ -81,12 +82,25 @@ class AIModel:
     def add_metric(self, key: str, value: str) -> None:
         """
         Adds a performance metric to the model's metrics.
+
+        Args:
+            key (str): The name of the metric.
+            value (str): The value of the metric.
+
+        Returns:
+            None
         """
         self.metrics[key] = value
 
     def remove_nulls(self, model_structure):
         """
         Recursively removes null values from the model structure.
+
+        Args:
+            model_structure (object): The model structure as a dictionary or list.
+
+        Returns:
+            object: Model structure with null values removed.
         """
         if isinstance(model_structure, dict):
             return {k: self.remove_nulls(v) for k, v in model_structure.items() if v is not None}
@@ -96,7 +110,13 @@ class AIModel:
 
     def populate_model_structure(self, trained_model):
         """
-        Populates the model_structure from a trained model object.
+        Populates the `model_structure` attribute from a trained model object.
+
+        Args:
+            trained_model (object): A trained machine learning model object.
+
+        Returns:
+            None
         """
         if self.framework == 'tensorflow':
             json_structure = json.loads(trained_model.to_json())
@@ -108,7 +128,11 @@ class AIModel:
 @dataclass
 class BiasAnalysis:
     """
-    Stores fairness metrics (e.g., demographic parity, equal odds).
+    Class to store results from bias analysis.
+
+    Args:
+        demographic_parity_difference (float): The difference in demographic parity between groups.
+        equal_odds_difference (float): The difference in equal odds between groups.
     """
     demographic_parity_difference: float
     equal_odds_difference: float
@@ -117,7 +141,11 @@ class BiasAnalysis:
 @dataclass
 class ExplainabilityAnalysis:
     """
-    Stores feature importance or interpretability metrics.
+    Class to store explainability metrics.
+
+    Args:
+        name (str): Name of the explainability method used.
+        metrics (List[Metric]): List of metrics related to explainability analysis.
     """
     name: str
     metrics: List[Metric] = field(default_factory=list)
@@ -126,7 +154,66 @@ class ExplainabilityAnalysis:
 @dataclass
 class ModelCard:
     """
-    Describes the model's documentation, analyses, and requirements.
+    Represents a documented model card containing metadata, analyses, and requirements
+    for an AI model. It includes fields for describing the model, performing bias and
+    explainability analyses, and validating schema compliance.
+
+    Args:
+        name (str): The name of the model card.
+        version (str): The model card's version.
+        short_description (str): A brief description of the model card.
+        full_description (str): A comprehensive description of the model card.
+        keywords (str): Comma-separated keywords for searchability.
+        author (str): The model's creator or owner.
+        input_type (str): Type of input data (e.g., "Image", "Text").
+        category (str): The category of the model (e.g., "Classification", "Regression").
+        input_data (Optional[str]): Description of the model's input data.
+        output_data (Optional[str]): Description of the model's output data.
+        foundational_model (Optional[str]): Reference to any foundational model used.
+        ai_model (Optional[object]): Reference to an `AIModel` instance containing model details.
+        bias_analysis (Optional[object]): Reference to a `BiasAnalysis` instance containing bias metrics.
+        xai_analysis (Optional[object]): Reference to an `ExplainabilityAnalysis` instance with interpretability metrics.
+        model_requirements (Optional[List[str]]): List of required packages and dependencies.
+        id (Optional[str]): Unique identifier for the model card, generated upon submission.
+
+    Example:
+        .. code-block:: python
+
+            model_card = ModelCard(
+                name="Model Name",
+                version="1.0",
+                short_description="A brief description",
+                full_description="A detailed description of the model's purpose and usage.",
+                keywords="classification, AI, image processing",
+                author="Author Name",
+                input_type="Image",
+                category="Classification",
+                input_data="Images of size 28x28.",
+                output_data="Prediction probabilities for classes.",
+                foundational_model="Base Model Reference",
+                ai_model=AIModel(
+                    name="Model Name",
+                    version="1.0",
+                    description="Detailed model description",
+                    owner="Model owner",
+                    location="Storage location",
+                    license="MIT",
+                    framework="TensorFlow",
+                    model_type="Classifier",
+                    test_accuracy=0.95,
+                    model_structure={},
+                    metrics={"accuracy": "0.95"}
+                ),
+                bias_analysis=BiasAnalysis(
+                    demographic_parity_difference=0.05,
+                    equal_odds_difference=0.1
+                ),
+                xai_analysis=ExplainabilityAnalysis(
+                    name="SHAP",
+                    metrics=[Metric(key="Feature A", value="0.1")]
+                ),
+                model_requirements=["numpy>=1.19.2", "tensorflow>=2.4.1"]
+            )
     """
     name: str
     version: str
@@ -148,44 +235,76 @@ class ModelCard:
     credentials: Optional[Dict[str, str]] = field(init=False, default=None)
 
     def __str__(self) -> str:
+        """
+        Returns:
+            str: A JSON-formatted string representation of the model card.
+        """
         return json.dumps(self.__dict__, cls=ModelCardJSONEncoder, indent=4, separators=(',', ': '))
 
-    def populate_bias(self, dataset, true_labels, predicted_labels,
-                      sensitive_feature_name, sensitive_feature_data, model) -> None:
+    def populate_bias(self,
+                      dataset,
+                      true_labels,
+                      predicted_labels,
+                      sensitive_feature_name,
+                      sensitive_feature_data,
+                      model) -> None:
         """
-        Calculates bias metrics.
+        Calculates and stores fairness metrics for the model.
+
+        Args:
+            dataset (object): The dataset used for bias analysis.
+            true_labels (list): The ground truth labels.
+            predicted_labels (list): The model's predictions.
+            sensitive_feature_name (str): The name of the sensitive attribute.
+            sensitive_feature_data (list): Values for the sensitive feature.
+            model (object): The model being analyzed.
         """
-        bias_analyzer = BiasAnalyzer(dataset, true_labels, predicted_labels,
-                                     sensitive_feature_name, sensitive_feature_data, model)
+        bias_analyzer = BiasAnalyzer(dataset, true_labels, predicted_labels, sensitive_feature_name,
+                                     sensitive_feature_data, model)
         self.bias_analysis = bias_analyzer.calculate_bias_metrics()
 
-    def populate_xai(self, train_dataset, column_names, model, n_features: int = 10) -> None:
+    def populate_xai(self,
+                     train_dataset,
+                     column_names,
+                     model,
+                     n_features: int = 10) -> None:
         """
-        Calculates XAI features.
+        Computes and stores feature importance metrics for explainability.
+
+        Args:
+            train_dataset (object): Training dataset used in the analysis.
+            column_names (list): Names of the features in the dataset.
+            model (object): The model being explained.
+            n_features (int): Number of features to analyze. Default is 10.
         """
         xai_analyzer = ExplainabilityAnalyser(train_dataset, column_names, model)
         self.xai_analysis = xai_analyzer.calculate_xai_features(n_features)
 
     def populate_requirements(self) -> None:
         """
-        Gathers environment dependencies.
+        Gathers package requirements for the model card, excluding certain dependencies.
         """
         exclude_packages = {"shap", "fairlearn"}
         installed_packages = pkg_resources.working_set
-        packages_list = sorted([f"{p.key}=={p.version}" for p in installed_packages])
-        self.model_requirements = [pkg for pkg in packages_list
-                                   if pkg.split("==")[0] not in exclude_packages]
+        packages_list = sorted([f"{pkg.key}=={pkg.version}" for pkg in installed_packages])
+        self.model_requirements = [
+            pkg for pkg in packages_list
+            if pkg.split("==")[0] not in exclude_packages
+        ]
 
     def validate(self) -> bool:
         """
-        Validates the model card against a JSON schema.
+        Validates the model card against a predefined JSON schema.
+
+        Returns:
+            bool: True if the model card is valid according to the schema, False otherwise.
         """
         mc_json_str = str(self)
         try:
             with open(SCHEMA_JSON, 'r', encoding='utf-8') as schema_file:
                 schema = json.load(schema_file)
             jsonschema.validate(instance=json.loads(mc_json_str), schema=schema)
-            logging.info("Model card validated successfully.")
+            logging.info("Model card validation successful.")
             return True
         except jsonschema.ValidationError as val_err:
             logging.error(f"Model card validation error: {val_err.message}")
@@ -345,7 +464,10 @@ class ModelCard:
 
     def save(self, file_location: str) -> None:
         """
-        Serializes the model card as JSON to the specified path.
+        Saves the model card as a JSON file to the specified location.
+
+        Args:
+            file_location (str): Path where the model card JSON file will be saved.
         """
         try:
             with open(file_location, 'w', encoding='utf-8') as json_file:
@@ -432,6 +554,9 @@ class ModelCard:
 class ModelCardJSONEncoder(JSONEncoder):
     """
     Custom JSON Encoder for ModelCard to handle complex objects.
+
+    Methods:
+        default: Serializes non-serializable fields.
     """
 
     def default(self, obj):
