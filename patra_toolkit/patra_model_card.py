@@ -1,9 +1,6 @@
-import importlib
 import json
 import logging
 import os.path
-import subprocess
-import sys
 import tempfile
 from dataclasses import dataclass, field
 from json import JSONEncoder
@@ -16,25 +13,11 @@ import requests
 
 from .exceptions import PatraIDGenerationError
 from .fairlearn_bias import BiasAnalyzer
-from .model_store import get_model_store
+from .model_store import get_model_store, ensure_package_installed
 from .shap_xai import ExplainabilityAnalyser
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 logging.basicConfig(level=logging.INFO)
-
-
-def ensure_package_installed(package_name: str, import_name: Optional[str] = None):
-    """
-    Tries to import a package by name and if not found, installs it using pip.
-    Returns the imported module.
-    """
-    import_name = import_name or package_name
-    try:
-        return importlib.import_module(import_name)
-    except ImportError:
-        logging.info(f"Package '{package_name}' not found. Installing...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
-        return importlib.import_module(import_name)
 
 
 @dataclass
@@ -49,7 +32,38 @@ class Metric:
 @dataclass
 class AIModel:
     """
-    Represents and stores AI model metadata and performance metrics.
+    Represents and stores AI model metadata and its performance metrics.
+
+    Args:
+        name (str): The name of the model.
+        version (str): The version identifier of the model.
+        description (str): A detailed description of the model.
+        owner (str): The owner of the model.
+        location (str): The file path or URL where the model is stored.
+        license (str): The license under which the model is distributed.
+        framework (str): The framework used to build the model (e.g., TensorFlow, PyTorch).
+        model_type (str): The type of model (e.g., classifier, regressor).
+        test_accuracy (str): The accuracy of the model on a test dataset.
+        model_structure (str): The structure of the model as a dictionary (optional).
+        metrics (str): A dictionary storing performance metrics for the model.
+
+    Example:
+        .. code-block:: python
+
+            ai_model = AIModel(
+                name="Model Name",
+                version="1.0",
+                description="Model description",
+                owner="Model owner",
+                location="Model location",
+                license="Model license",
+                framework="Model framework",
+                model_type="Model type",
+                test_accuracy=0.95,
+                model_structure={},
+                metrics={"accuracy": "0.95"}
+            )
+
     """
     name: str
     version: str
