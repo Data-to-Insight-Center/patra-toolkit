@@ -75,7 +75,7 @@ class AIModel:
     framework: str
     model_type: str
     test_accuracy: float
-    inference_label: Optional[str] = ""
+    inference_labels: Optional[str] = ""
     model_structure: Optional[object] = field(default_factory=dict)
     metrics: Dict[str, str] = field(default_factory=dict)
 
@@ -319,7 +319,7 @@ class ModelCard:
             model: Optional[object] = None,
             file_format: Optional[str] = "h5",
             model_store: Optional[str] = "huggingface",
-            inference_label: Optional[str] = None,
+            inference_labels: Optional[str] = None,
             artifacts: Optional[List[str]] = None
     ):
         """
@@ -330,7 +330,7 @@ class ModelCard:
             model (object): The trained model to be uploaded.
             file_format (str): The format in which the model will be saved (default: "h5").
             model_store (str): The model store to use for uploading the model (default: "huggingface").
-            inference_label (str): The inference label to be uploaded.
+            inference_labels (str): The inference labels to be uploaded.
             artifacts (List[str]): List of artifacts to be uploaded.
 
         Returns:
@@ -344,7 +344,7 @@ class ModelCard:
                     model=model,
                     file_format="h5",
                     model_store="huggingface",
-                    inference_label="inference_label.json",
+                    inference_labels="inference_label.json",
                     artifacts=["requirements.txt", "README.md"]
                 )
         """
@@ -365,11 +365,11 @@ class ModelCard:
             logging.error(f"Model submission failed during model ID creation: {e}")
             return None
 
-        # Upload model, inference label, and artifacts if requested
+        # Upload model, inference labels, and artifacts if requested
         model_upload_location = None
         inference_url = None
         artifact_locations = []
-        upload_requested = any([model, inference_label, artifacts])
+        upload_requested = any([model, inference_labels, artifacts])
 
         if upload_requested:
             # Retrieve credentials for model upload
@@ -409,18 +409,18 @@ class ModelCard:
                     return None
 
             # Upload the inference label and artifacts
-            if inference_label is not None:
+            if inference_labels is not None:
                 try:
                     backend = get_model_store(model_store.lower())
                     if model_store.lower() == "huggingface":
                         ensure_package_installed("huggingface_hub")
                     elif model_store.lower() == "github":
                         ensure_package_installed("PyGithub", "github")
-                    inference_url = backend.upload(inference_label, self.id, self.credentials)
-                    self.ai_model.inference_label = inference_url
-                    logging.info(f"Inference label uploaded at: {inference_url}")
+                    inference_url = backend.upload(inference_labels, self.id, self.credentials)
+                    self.ai_model.inference_labels = inference_url
+                    logging.info(f"Inference labels uploaded at: {inference_url}")
                 except Exception as e:
-                    logging.error(f"Model submission failed during inference label upload: {e}")
+                    logging.error(f"Model submission failed during inference labels upload: {e}")
                     return None
 
             # Upload artifacts

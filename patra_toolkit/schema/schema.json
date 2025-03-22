@@ -177,7 +177,7 @@
             "$ref": "#/fields/metrics"
           }
         },
-        "inference_label": {
+        "inference_labels": {
           "type": "string",
           "description": "Inference label for the AI model"
         }

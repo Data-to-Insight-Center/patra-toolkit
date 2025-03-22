@@ -127,7 +127,7 @@ mc.submit(
     model=<trained_model>,
     file_format="pt", # or "h5"
     model_store="huggingface", # or "github"
-    inference_label="labels.txt",
+    inference_labels="labels.txt",
     artifacts=[<artifact1_path>, <artifact2_path>]
 )
 ```

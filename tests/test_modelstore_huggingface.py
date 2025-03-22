@@ -83,7 +83,7 @@ class TestHuggingFaceStore(unittest.TestCase):
             model=models.resnet50(pretrained=False),
             file_format="pt",
             model_store="huggingface",
-            inference_label=temp_inference,
+            inference_labels=temp_inference,
             artifacts=temp_artifacts
         )
 
@@ -125,7 +125,7 @@ class TestHuggingFaceStore(unittest.TestCase):
             model=models.resnet50(pretrained=False),
             file_format="pt",
             model_store="huggingface",
-            inference_label=None,
+            inference_labels=None,
             artifacts=None
         )
 
@@ -174,7 +174,7 @@ class TestHuggingFaceStore(unittest.TestCase):
             model=None,
             file_format=None,
             model_store=None,
-            inference_label=None,
+            inference_labels=None,
             artifacts=None
         )
 
