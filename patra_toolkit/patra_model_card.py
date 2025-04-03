@@ -316,6 +316,7 @@ class ModelCard:
     def submit(
             self,
             patra_server_url: str,
+            access_token: str,
             model: Optional[object] = None,
             file_format: Optional[str] = "h5",
             model_store: Optional[str] = "huggingface",
@@ -327,6 +328,7 @@ class ModelCard:
 
         Args:
             patra_server_url (str): The URL of the Patra server.
+            access_token (str): The access token for the Patra server.
             model (object): The trained model to be uploaded.
             file_format (str): The format in which the model will be saved (default: "h5").
             model_store (str): The model store to use for uploading the model (default: "huggingface").
@@ -341,6 +343,7 @@ class ModelCard:
 
                 model_card.submit(
                     patra_server_url="http://localhost:5002",
+                    access_token="your_access_token",
                     model=model,
                     file_format="h5",
                     model_store="huggingface",
@@ -372,7 +375,17 @@ class ModelCard:
         upload_requested = any([model, inference_labels, artifacts])
 
         if upload_requested:
-            # Retrieve credentials for model upload
+            # Verify the provided access token with the Patra server
+            try:
+                headers = {'Authorization': f'Bearer {access_token}'}
+                verify_response = requests.get(f"{patra_server_url}/verify_token", headers=headers)
+                verify_response.raise_for_status()
+                logging.info("Access token verified successfully.")
+            except Exception as e:
+                logging.error(f"Invalid or expired access token: {e}")
+                return None
+
+            # Retrieve credentials for model upload (token now passed in headers)
             try:
                 creds = self._get_credentials(patra_server_url, model_store)
                 self.credentials = {"token": creds.get("token"), "username": creds.get("username")}
