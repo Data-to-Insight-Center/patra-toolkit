@@ -19,6 +19,7 @@ from .shap_xai import ExplainabilityAnalyser
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 logging.basicConfig(level=logging.INFO)
 
+
 @dataclass
 class Metric:
     """
@@ -30,6 +31,7 @@ class Metric:
     """
     key: str
     value: str
+
 
 @dataclass
 class AIModel:
@@ -232,7 +234,6 @@ class ModelCard:
     xai_analysis: Optional[object] = None
     model_requirements: Optional[List[str]] = None
     id: Optional[str] = field(init=False, default=None)
-    credentials: Optional[Dict[str, str]] = field(init=False, default=None)
 
     def __str__(self) -> str:
         """
@@ -375,7 +376,7 @@ class ModelCard:
             # Retrieve credentials for model upload
             try:
                 creds = self._get_credentials(patra_server_url, model_store)
-                self.credentials = {"token": creds.get("token"), "username": creds.get("username")}
+                credentials = {"token": creds.get("token"), "username": creds.get("username")}
             except Exception as e:
                 logging.error(f"Model submission failed during credential retrieval: {e}")
                 return None
@@ -395,14 +396,14 @@ class ModelCard:
                 # Upload the model to the specified model store
                 backend = get_model_store(model_store.lower())
                 try:
-                    model_upload_location = backend.upload(serialized_model, self.id, self.credentials)
+                    model_upload_location = backend.upload(serialized_model, self.id, credentials)
                     logging.info(f"Model uploaded at: {model_upload_location}")
                     self.ai_model.location = model_upload_location
                     self.output_data = self._extract_repository_link(model_upload_location, model_store)
                 except Exception as e:
                     logging.error(f"Model submission failed during model upload: {e}")
                     try:
-                        backend.delete_repo(self.id, self.credentials)
+                        backend.delete_repo(self.id, credentials)
                         logging.info("Rollback successful: repository deleted.")
                     except Exception as rollback_err:
                         logging.error(f"Rollback failed: {rollback_err}")
@@ -416,7 +417,7 @@ class ModelCard:
                         ensure_package_installed("huggingface_hub")
                     elif model_store.lower() == "github":
                         ensure_package_installed("PyGithub", "github")
-                    inference_url = backend.upload(inference_labels, self.id, self.credentials)
+                    inference_url = backend.upload(inference_labels, self.id, credentials)
                     self.ai_model.inference_labels = inference_url
                     logging.info(f"Inference labels uploaded at: {inference_url}")
                 except Exception as e:
@@ -428,7 +429,7 @@ class ModelCard:
                 try:
                     backend = get_model_store(model_store.lower())
                     for artifact in artifacts:
-                        loc = backend.upload(artifact, self.id, self.credentials)
+                        loc = backend.upload(artifact, self.id, credentials)
                         logging.info(f"Artifact '{artifact}' uploaded at: {loc}")
                         artifact_locations.append(loc)
                 except Exception as e:
@@ -451,7 +452,7 @@ class ModelCard:
             if upload_requested:
                 try:
                     backend = get_model_store(model_store.lower())
-                    backend.delete_repo(self.id, self.credentials)
+                    backend.delete_repo(self.id, credentials)
                     logging.info("Rollback successful after ModelCard submission failure.")
                 except Exception as rollback_err:
                     logging.error(f"Rollback failed: {rollback_err}. Manual cleanup required.")
