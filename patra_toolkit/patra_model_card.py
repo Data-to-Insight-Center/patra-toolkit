@@ -363,7 +363,7 @@ class ModelCard:
     def submit(
             self,
             patra_server_url: str,
-            token: Optional[str] = None,
+            token: str,
             model: Optional[object] = None,
             file_format: Optional[str] = "h5",
             model_store: Optional[str] = "huggingface",
