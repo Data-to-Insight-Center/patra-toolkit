@@ -522,8 +522,8 @@ class ModelCard:
         try:
             response = requests.get(
                 f"{patra_server_url}/get_model_id",
-                params={"author": self.author, "name": self.name, "version": self.version},
-                headers={'Content-Type': 'application/json'}  # , 'X-Tapis-Token': tapis_token}
+                params={"name": self.name, "version": self.version},
+                headers={"Content-Type": "application/json", "X-Tapis-Token": tapis_token},
             )
             if response.status_code == 409:
                 if is_uploading_model:
