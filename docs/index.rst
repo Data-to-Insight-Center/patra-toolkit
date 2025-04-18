@@ -74,7 +74,6 @@ Find the descriptions of the Model Card parameters in the
      short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
      full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
      keywords="uci adult, tensorflow, explainability, fairness, patra",
-     author="Sachith Withana",
      input_type="Tabular",
      category="classification",
      foundational_model="None"

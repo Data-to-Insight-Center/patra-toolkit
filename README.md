@@ -52,20 +52,28 @@ Find the descriptions of the Model Card parameters in the [schema descriptions d
 from patra_toolkit import ModelCard
 
 mc = ModelCard(
-  name="UCI Adult Data Analysis model using Tensorflow",
-  version="0.1",
-  short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
-  full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
-  keywords="uci adult, tensorflow, explainability, fairness, patra",
-  author="Sachith Withana",
-  input_type="Tabular",
-  category="classification",
-  foundational_model="None"
+    name="UCI Adult Data Analysis model using Tensorflow",
+    version="0.1",
+    short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
+    full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
+    keywords="uci adult, tensorflow, explainability, fairness, patra",
+    input_type="Tabular",
+    category="classification",
+    foundational_model="None"
 )
 
 # Add Model Metadata
 mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
 mc.output_data = 'https://huggingface.co/Data-to-Insight-Center/UCI-Adult'
+
+# Add User Information
+mc.populate_user(
+    username="neelk",
+    orcid="0000-0002-1234-5678",
+    name="Neelesh Karthikeyan",
+    institution="Indiana University",
+    email="neelk@iu.edu"
+)
 ```
 
 ### Initialize an AI/ML Model
