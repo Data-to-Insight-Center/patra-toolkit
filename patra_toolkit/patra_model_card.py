@@ -317,7 +317,6 @@ class ModelCard:
     def authenticate(self, username: str, password: str) -> str:
         """
         Authenticates the user using TACC credentials and returns a Tapis access token.
-        The URL now includes the "oauth2" segment to use the proper endpoint.
 
         Args:
             username (str): TACC username.
@@ -329,15 +328,15 @@ class ModelCard:
         Raises:
             Exception: If authentication fails.
         """
-        url = "https://icicleai.tapis.io/v3/oauth2/tokens"
-        headers = {"Content-Type": "application/json"}
         payload = {
             "username": username,
             "password": password,
             "grant_type": "password"
         }
 
-        response = requests.post(url, headers=headers, data=json.dumps(payload))
+        response = requests.post("https://icicleai.tapis.io/v3/oauth2/tokens",
+                                 headers={"Content-Type": "application/json"},
+                                 data=json.dumps(payload))
         response.raise_for_status()
         token_data = response.json()
 
@@ -363,7 +362,7 @@ class ModelCard:
     def submit(
             self,
             patra_server_url: str,
-            token: str,
+            token: Optional[str] = None,
             model: Optional[object] = None,
             file_format: Optional[str] = "h5",
             model_store: Optional[str] = "huggingface",
@@ -375,7 +374,7 @@ class ModelCard:
 
         Args:
             patra_server_url (str): The URL of the Patra server.
-            token (str): The Tapis token for authentication.
+            token (str): The access token for authentication.
             model (object): The trained model to be uploaded.
             file_format (str): The format in which the model will be saved (default: "h5").
             model_store (str): The model store to use for uploading the model (default: "huggingface").
@@ -390,7 +389,7 @@ class ModelCard:
 
                 model_card.submit(
                     patra_server_url="http://localhost:5002",
-                    token="your_tapis_token",
+                    token="access_token",
                     model=model,
                     file_format="h5",
                     model_store="huggingface",
@@ -408,6 +407,8 @@ class ModelCard:
         try:
             self.id = self._get_model_id(patra_server_url, token, is_uploading_model)
             logging.info(f"PID created: {self.id}")
+            # Update author in the model card to the authenticated user
+            self.author = self.id.split("-")[0]
         except PatraIDGenerationError as pid_exc:
             logging.error(f"Model submission failed during model ID creation: {pid_exc}")
             return None
@@ -488,10 +489,14 @@ class ModelCard:
         # Submit the model card to the Patra server
         try:
             submission_payload = json.loads(str(self))
+            headers = {"Content-Type": "application/json"}
+            if token:
+                headers["X-Tapis-Token"] = token
+
             response = requests.post(
                 f"{patra_server_url}/upload_mc",
                 json=submission_payload,
-                headers={'Content-Type': 'application/json', 'X-Tapis-Token': token}
+                headers=headers
             )
             response.raise_for_status()
             logging.info("Model Card submitted successfully.")
@@ -520,10 +525,14 @@ class ModelCard:
 
         # Attempt to retrieve the model ID from the server
         try:
+            headers = {"Content-Type": "application/json"}
+            if token:
+                headers["X-Tapis-Token"] = token
+
             response = requests.get(
                 f"{patra_server_url.rstrip('/')}/get_model_id",
                 params={"name": self.name, "version": self.version},
-                headers={"Content-Type": "application/json", "X-Tapis-Token": token},
+                headers=headers,
                 proxies={"http": None, "https": None},
                 timeout=15
             )
@@ -548,10 +557,13 @@ class ModelCard:
 
     def _get_credentials(self, patra_server_url: str, token: str, model_store: str) -> Dict[str, str]:
         endpoint = "/get_huggingface_credentials" if model_store.lower() == "huggingface" else "/get_github_credentials"
-        url = f"{patra_server_url}{endpoint}"
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["X-Tapis-Token"] = token
+
         response = requests.get(
-            url,
-            headers={'Content-Type': 'application/json', 'X-Tapis-Token': token}
+            f"{patra_server_url}{endpoint}",
+            headers=headers
         )
         response.raise_for_status()
         return response.json()
