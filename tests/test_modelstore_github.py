@@ -30,7 +30,6 @@ class TestGitHubStore(unittest.TestCase):
             short_description="A test ResNet model on GitHub",
             full_description="Testing ResNet model submission to GitHub",
             keywords="resnet, test, github",
-            author="test-user",
             input_type="Image",
             category="classification"
         )
@@ -165,7 +164,6 @@ class TestGitHubStore(unittest.TestCase):
             short_description="A test ResNet model",
             full_description="Testing ResNet model submission",
             keywords="resnet, test, github",
-            author="test-user",
             input_type="Image",
             category="classification"
         )

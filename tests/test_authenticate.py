@@ -32,7 +32,6 @@ class AuthenticationTestCase(unittest.TestCase):
             short_description="Camera Traps CNN inference model card",
             full_description="Camera Traps CNN full descr inference model card",
             keywords="cnn, pytorch, icicle",
-            author="Joe",
             input_data="",
             input_type="image",
             output_data="",
