@@ -526,12 +526,15 @@ class ModelCard:
         # Attempt to retrieve the model ID from the server
         try:
             headers = {"Content-Type": "application/json"}
+            params = {"name": self.name, "version": self.version}
             if token:
                 headers["X-Tapis-Token"] = token
+            else:
+                params["author"] = self.author
 
             response = requests.get(
                 f"{patra_server_url.rstrip('/')}/get_model_id",
-                params={"name": self.name, "version": self.version},
+                params=params,
                 headers=headers,
                 proxies={"http": None, "https": None},
                 timeout=15
