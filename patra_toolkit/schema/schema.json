@@ -232,7 +232,6 @@
     "version",
     "short_description",
     "full_description",
-    "author",
     "keywords",
     "input_data",
     "input_type",
