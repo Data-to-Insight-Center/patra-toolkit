@@ -119,20 +119,47 @@ mc.save(<file_path>)
 
 ## Submit
 
-Use mc.submit() to register only a model card, an AI model along with the model card, just the artifacts, or all at once!
+Use `mc.submit()` to either upload just a model card, an AI model along with the model card, just the artifacts, or all at once!
 
 ```python
 mc.submit(
     patra_server_url=<patra_server_url>,
     model=<trained_model>,
-    file_format="pt", # or "h5"
-    model_store="huggingface", # or "github"
+    file_format="pt",  # or "h5"
+    model_store="huggingface",  # or "github"
     inference_labels="labels.txt",
-    artifacts=[<artifact1_path>, <artifact2_path>]
+    artifacts=[<artifact1_path>, <artifact2_path>],
+    token=<optional_token>  # optional authentication token
 )
 ```
- 
-If a name-version conflict arises, increment mc.version. In case of failure, submit() attempts partial rollbacks to avoid orphaned uploads.
+
+The `token` parameter is **optional**. If your hosted Patra server requires authentication, provide a valid token.
+
+If a name-version conflict arises, increment `mc.version`. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
+
+---
+
+## Authentication with TACC Credentials
+
+To authenticate against a Patra server hosted in TAPIS, use Patra's built-in `authenticate()` method to obtain an access token:
+
+```python
+from patra_toolkit import ModelCard
+
+mc = ModelCard(...)
+
+tapis_token = mc.authenticate(username="<your_tacc_username>", password="<your_tacc_password>")
+```
+
+This will print and return a valid `X-Tapis-Token` (JWT). You can then pass this token to `mc.submit()`:
+
+```python
+mc.submit(
+    patra_server_url=<tapis_hosted_patra_server_url>,
+    model=<trained_model>,
+    token=tapis_token
+)
+```
 
 ---
 

@@ -314,9 +314,55 @@ class ModelCard:
             logging.error(f"Unexpected error during validation: {exc}")
             return False
 
+    def authenticate(self, username: str, password: str) -> str:
+        """
+        Authenticates the user using TACC credentials and returns a Tapis access token.
+
+        Args:
+            username (str): TACC username.
+            password (str): TACC password.
+
+        Returns:
+            str: Access token string if authentication is successful.
+
+        Raises:
+            Exception: If authentication fails.
+        """
+        payload = {
+            "username": username,
+            "password": password,
+            "grant_type": "password"
+        }
+
+        response = requests.post("https://icicleai.tapis.io/v3/oauth2/tokens",
+                                 headers={"Content-Type": "application/json"},
+                                 data=json.dumps(payload))
+        response.raise_for_status()
+        token_data = response.json()
+
+        jwt_token = token_data["result"]["access_token"]["access_token"]
+        print("Authentication successful.")
+        print("X-Tapis-Token:", jwt_token)
+        return jwt_token
+
+    def save(self, file_location: str) -> None:
+        """
+        Saves the model card as a JSON file to the specified location.
+
+        Args:
+            file_location (str): Path where the model card JSON file will be saved.
+        """
+        try:
+            with open(file_location, 'w', encoding='utf-8') as json_file:
+                json_file.write(str(self))
+            logging.info(f"Model card saved to {file_location}.")
+        except IOError as io_err:
+            logging.error(f"Failed to save model card: {io_err}")
+
     def submit(
             self,
             patra_server_url: str,
+            token: Optional[str] = None,
             model: Optional[object] = None,
             file_format: Optional[str] = "h5",
             model_store: Optional[str] = "huggingface",
@@ -328,6 +374,7 @@ class ModelCard:
 
         Args:
             patra_server_url (str): The URL of the Patra server.
+            token (str): The access token for authentication.
             model (object): The trained model to be uploaded.
             file_format (str): The format in which the model will be saved (default: "h5").
             model_store (str): The model store to use for uploading the model (default: "huggingface").
@@ -342,6 +389,7 @@ class ModelCard:
 
                 model_card.submit(
                     patra_server_url="http://localhost:5002",
+                    token="access_token",
                     model=model,
                     file_format="h5",
                     model_store="huggingface",
@@ -357,8 +405,10 @@ class ModelCard:
         # Retrieve model ID from the Patra server
         is_uploading_model = (model is not None)
         try:
-            self.id = self._get_model_id(patra_server_url, is_uploading_model)
-            logging.info(f"Model ID retrieved: {self.id}")
+            self.id = self._get_model_id(patra_server_url, token, is_uploading_model)
+            logging.info(f"PID created: {self.id}")
+            # Update author in the model card to the authenticated user
+            self.author = self.id.split("-")[0]
         except PatraIDGenerationError as pid_exc:
             logging.error(f"Model submission failed during model ID creation: {pid_exc}")
             return None
@@ -375,7 +425,7 @@ class ModelCard:
         if upload_requested:
             # Retrieve credentials for model upload
             try:
-                creds = self._get_credentials(patra_server_url, model_store)
+                creds = self._get_credentials(patra_server_url, token, model_store)
                 credentials = {"token": creds.get("token"), "username": creds.get("username")}
             except Exception as e:
                 logging.error(f"Model submission failed during credential retrieval: {e}")
@@ -439,10 +489,14 @@ class ModelCard:
         # Submit the model card to the Patra server
         try:
             submission_payload = json.loads(str(self))
+            headers = {"Content-Type": "application/json"}
+            if token:
+                headers["X-Tapis-Token"] = token
+
             response = requests.post(
                 f"{patra_server_url}/upload_mc",
                 json=submission_payload,
-                headers={'Content-Type': 'application/json'}
+                headers=headers
             )
             response.raise_for_status()
             logging.info("Model Card submitted successfully.")
@@ -458,7 +512,7 @@ class ModelCard:
                     logging.error(f"Rollback failed: {rollback_err}. Manual cleanup required.")
             return None
 
-    def _get_model_id(self, patra_server_url: str, is_uploading_model: bool) -> str:
+    def _get_model_id(self, patra_server_url: str, token: str, is_uploading_model: bool) -> str:
         """
         Retrieves a new model ID from the Patra server based on author, name, and version.
         If the ID already exists:
@@ -471,10 +525,19 @@ class ModelCard:
 
         # Attempt to retrieve the model ID from the server
         try:
+            headers = {"Content-Type": "application/json"}
+            params = {"name": self.name, "version": self.version}
+            if token:
+                headers["X-Tapis-Token"] = token
+            else:
+                params["author"] = self.author
+
             response = requests.get(
-                f"{patra_server_url}/get_model_id",
-                params={"author": self.author, "name": self.name, "version": self.version},
-                headers={'Content-Type': 'application/json'}
+                f"{patra_server_url.rstrip('/')}/get_model_id",
+                params=params,
+                headers=headers,
+                proxies={"http": None, "https": None},
+                timeout=15
             )
             if response.status_code == 409:
                 if is_uploading_model:
@@ -489,33 +552,21 @@ class ModelCard:
             id_data = response.json()
             return id_data["pid"]
         except requests.exceptions.ConnectionError:
-            raise PatraIDGenerationError("Patra server is unreachable.")
+            raise PatraIDGenerationError("Patra server is unreachable. Verify if the token is provided and valid.")
         except requests.exceptions.Timeout:
             raise PatraIDGenerationError("Patra server connection timed out.")
         except requests.exceptions.RequestException as req_exc:
             raise PatraIDGenerationError(f"Request failed: {req_exc}")
 
-    def save(self, file_location: str) -> None:
-        """
-        Saves the model card as a JSON file to the specified location.
-
-        Args:
-            file_location (str): Path where the model card JSON file will be saved.
-        """
-        try:
-            with open(file_location, 'w', encoding='utf-8') as json_file:
-                json_file.write(str(self))
-            logging.info(f"Model card saved to {file_location}.")
-        except IOError as io_err:
-            logging.error(f"Failed to save model card: {io_err}")
-
-    def _get_credentials(self, patra_server_url: str, model_store: str) -> Dict[str, str]:
+    def _get_credentials(self, patra_server_url: str, token: str, model_store: str) -> Dict[str, str]:
         endpoint = "/get_huggingface_credentials" if model_store.lower() == "huggingface" else "/get_github_credentials"
-        url = f"{patra_server_url}{endpoint}"
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["X-Tapis-Token"] = token
+
         response = requests.get(
-            url,
-            params={"author": self.author, "name": self.name, "version": self.version},
-            headers={'Content-Type': 'application/json'}
+            f"{patra_server_url}{endpoint}",
+            headers=headers
         )
         response.raise_for_status()
         return response.json()
