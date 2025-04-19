@@ -293,7 +293,7 @@ class ModelCard:
         ]
 
     def populate_user(self,
-                      username: str,
+                      user_id: str,
                       orcid: str,
                       name: str,
                       institution: str,
@@ -302,14 +302,14 @@ class ModelCard:
         Populates user information in the model card.
 
         Args:
-            username (str): username.
+            user_id (str): user_id.
             orcid (str): ORCID ID of the user.
             name (str): Full name of the user.
             institution (str): Institution or organization of the user.
             email (str): Email address of the user.
         """
         self.user = {
-            "username": username,
+            "user_id": user_id,
             "orcid": orcid,
             "name": name,
             "institution": institution,
@@ -432,7 +432,7 @@ class ModelCard:
             self.id = self._get_model_id(patra_server_url, token, is_uploading_model)
             logging.info(f"PID created: {self.id}")
             # Update author in the model card to the authenticated user
-            self.author = self.id.split("-")[0]
+            self.user["user_id"] = self.id.split("-")[0]
         except PatraIDGenerationError as pid_exc:
             logging.error(f"Model submission failed during model ID creation: {pid_exc}")
             return None
@@ -554,7 +554,7 @@ class ModelCard:
             if token:
                 headers["X-Tapis-Token"] = token
             else:
-                params["author"] = self.author
+                params["author"] = self.user["user_id"]
 
             response = requests.get(
                 f"{patra_server_url.rstrip('/')}/get_model_id",

@@ -60,9 +60,7 @@ Usage
 
 Create a Model Card
 ^^^^^^^^^^^^^^^^^^^
-
-Find the descriptions of the Model Card parameters in the
-``docs/schema_description.md``.
+Find the descriptions of the Model Card parameters in the `schema descriptions document <./docs/schema_description.md>`_.
 
 .. code-block:: python
 
