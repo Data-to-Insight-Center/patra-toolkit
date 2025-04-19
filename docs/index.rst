@@ -69,19 +69,28 @@ Find the descriptions of the Model Card parameters in the
    from patra_toolkit import ModelCard
 
    mc = ModelCard(
-     name="UCI Adult Data Analysis model using Tensorflow",
-     version="0.1",
-     short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
-     full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
-     keywords="uci adult, tensorflow, explainability, fairness, patra",
-     input_type="Tabular",
-     category="classification",
-     foundational_model="None"
+       name="UCI Adult Data Analysis model using Tensorflow",
+       version="0.1",
+       short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
+       full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
+       keywords="uci adult, tensorflow, explainability, fairness, patra",
+       input_type="Tabular",
+       category="classification",
+       foundational_model="None"
    )
 
    # Add Model Metadata
    mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
    mc.output_data = 'https://huggingface.co/Data-to-Insight-Center/UCI-Adult'
+
+   # Add User Information
+   mc.populate_user(
+       username="neelk",
+       orcid="0000-0002-1234-5678",
+       name="Neelesh Karthikeyan",
+       institution="Indiana University",
+       email="neelk@iu.edu"
+   )
 
 Initialize an AI/ML Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -140,22 +149,50 @@ Validate and Save the Model Card
 Submit
 ------
 
-Use ``mc.submit()`` to register only a model card, an AI model along with the model card,
-just the artifacts, or all at once!
+Use ``mc.submit()`` to either upload just a model card, an AI model along with the model card, just the artifacts, or all at once!
 
 .. code-block:: python
 
    mc.submit(
        patra_server_url=<patra_server_url>,
        model=<trained_model>,
-       file_format="pt", # or "h5"
-       model_store="huggingface", # or "github"
+       file_format="pt",  # or "h5"
+       model_store="huggingface",  # or "github"
        inference_labels="labels.txt",
-       artifacts=[<artifact1_path>, <artifact2_path>]
+       artifacts=[<artifact1_path>, <artifact2_path>],
+       token=<optional_token>  # optional authentication token
    )
 
-If a name-version conflict arises, increment ``mc.version``. In case of failure,
-``submit()`` attempts partial rollbacks to avoid orphaned uploads.
+The ``token`` parameter is **optional**. If your hosted Patra server requires authentication, provide a valid token.
+
+If a name-version conflict arises, increment ``mc.version``. In case of failure, ``submit()`` attempts partial rollbacks to avoid orphaned uploads.
+
+----
+
+Authentication with TACC Credentials
+====================================
+
+To authenticate against a Patra server hosted in TAPIS, use Patra's built-in ``authenticate()`` method to obtain an access token:
+
+.. code-block:: python
+
+   from patra_toolkit import ModelCard
+
+   mc = ModelCard(...)
+
+   tapis_token = mc.authenticate(username="<your_tacc_username>", password="<your_tacc_password>")
+
+This will print and return a valid ``X-Tapis-Token`` (JWT). You can then pass this token to ``mc.submit()``:
+
+.. code-block:: python
+
+   mc.submit(
+       patra_server_url=<tapis_hosted_patra_server_url>,
+       model=<trained_model>,
+       token=tapis_token
+   )
+
+----
 
 Examples
 --------
