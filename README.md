@@ -16,20 +16,15 @@ The Patra Toolkit is a component of the Patra ModelCards framework designed to s
 
 ## Features
 
-1. **Encourages Accountability**  
-   - Incorporate essential model information (metadata, dataset details, fairness, explainability) at training time, ensuring AI models remain transparent from development to deployment.
+- **Encourages Accountability**: Incorporate essential model information (metadata, dataset details, fairness, explainability) at training time, ensuring AI models remain transparent from development to deployment.
 
-2. **Semi-Automated Capture**  
-   - Automated *Fairness* and *Explainability* scanners compute demographic parity, equal odds, SHAP-based feature importances, etc., for easy integration into Model Cards.
+- **Semi-Automated Capture**: Automated *Fairness* and *Explainability* scanners compute demographic parity, equal odds, SHAP-based feature importances, etc., for easy integration into Model Cards.
 
-3. **Machine-Actionable Model Cards**  
-   - Produce a structured JSON representation for ingestion into the Patra Knowledge Base. Ideal for advanced queries on model selection, provenance, versioning, or auditing.
+- **Machine-Actionable Model Cards**: Produce a structured JSON representation for ingestion into the Patra Knowledge Base. Ideal for advanced queries on model selection, provenance, versioning, or auditing.
 
-4. **Flexible Repository Support**  
-   - Pluggable backends for storing models/artifacts on **Hugging Face** or **GitHub**, unifying the model publishing workflow.
+- **Flexible Repository Support**: Pluggable backends for storing models/artifacts on **Hugging Face** or **GitHub**, unifying the model publishing workflow.
 
-5. **Versioning & Model Relationship Tracking**  
-   - Maintain multiple versions of a model with recognized edges (e.g., `revisionOf`, `alternateOf`) using embedding-based similarity. This ensures clear lineages and easy forward/backward provenance.
+- **Versioning & Model Relationship Tracking**: Maintain multiple versions of a model with recognized edges (e.g., `revisionOf`, `alternateOf`) using embedding-based similarity. This ensures clear lineages and easy forward/backward provenance.
 
 ## Getting Started
 
@@ -125,7 +120,7 @@ mc.validate()
 mc.save(<file_path>)
 ```
 
-## Submit
+## Submit Model Card
 
 Use `mc.submit()` to either upload just a model card, an AI model along with the model card, just the artifacts, or all at once!
 
@@ -147,7 +142,7 @@ If a name-version conflict arises, increment `mc.version`. In case of failure, `
 
 ---
 
-## Authentication with TACC Credentials
+### Authentication with TACC Credentials
 
 To authenticate against a Patra server hosted in TAPIS, use Patra's built-in `authenticate()` method to obtain an access token:
 
@@ -157,11 +152,7 @@ from patra_toolkit import ModelCard
 mc = ModelCard(...)
 
 tapis_token = mc.authenticate(username="<your_tacc_username>", password="<your_tacc_password>")
-```
 
-This will print and return a valid `X-Tapis-Token` (JWT). You can then pass this token to `mc.submit()`:
-
-```python
 mc.submit(
     patra_server_url=<tapis_hosted_patra_server_url>,
     model=<trained_model>,
