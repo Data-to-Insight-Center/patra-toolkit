@@ -187,7 +187,6 @@ class ModelCard:
                 short_description="A brief description",
                 full_description="A detailed description of the model's purpose and usage.",
                 keywords="classification, AI, image processing",
-                author="Author Name",
                 input_type="Image",
                 category="Classification",
                 input_data="Images of size 28x28.",
@@ -222,13 +221,13 @@ class ModelCard:
     short_description: str
     full_description: str
     keywords: str
-    author: str
     input_type: str
     category: str
     citation: Optional[str] = ""
     input_data: Optional[str] = ""
     output_data: Optional[str] = ""
     foundational_model: Optional[str] = ""
+    user: Optional[object] = None
     ai_model: Optional[object] = None
     bias_analysis: Optional[object] = None
     xai_analysis: Optional[object] = None
@@ -293,6 +292,30 @@ class ModelCard:
             if pkg.split("==")[0] not in exclude_packages
         ]
 
+    def populate_user(self,
+                      user_id: str,
+                      orcid: str,
+                      name: str,
+                      institution: str,
+                      email: str) -> None:
+        """
+        Populates user information in the model card.
+
+        Args:
+            user_id (str): user_id.
+            orcid (str): ORCID ID of the user.
+            name (str): Full name of the user.
+            institution (str): Institution or organization of the user.
+            email (str): Email address of the user.
+        """
+        self.user = {
+            "user_id": user_id,
+            "orcid": orcid,
+            "name": name,
+            "institution": institution,
+            "email": email
+        }
+
     def validate(self) -> bool:
         """
         Validates the model card against a predefined JSON schema.
@@ -314,7 +337,8 @@ class ModelCard:
             logging.error(f"Unexpected error during validation: {exc}")
             return False
 
-    def authenticate(self, username: str, password: str) -> str:
+    @staticmethod
+    def authenticate(username: str, password: str) -> str:
         """
         Authenticates the user using TACC credentials and returns a Tapis access token.
 
@@ -408,7 +432,7 @@ class ModelCard:
             self.id = self._get_model_id(patra_server_url, token, is_uploading_model)
             logging.info(f"PID created: {self.id}")
             # Update author in the model card to the authenticated user
-            self.author = self.id.split("-")[0]
+            self.user["user_id"] = self.id.split("-")[0]
         except PatraIDGenerationError as pid_exc:
             logging.error(f"Model submission failed during model ID creation: {pid_exc}")
             return None
@@ -530,7 +554,7 @@ class ModelCard:
             if token:
                 headers["X-Tapis-Token"] = token
             else:
-                params["author"] = self.author
+                params["author"] = self.user["user_id"]
 
             response = requests.get(
                 f"{patra_server_url.rstrip('/')}/get_model_id",

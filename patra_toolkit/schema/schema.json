@@ -48,10 +48,6 @@
       "type": "string",
       "description": "Keywords for the model card"
     },
-    "author": {
-      "type": "string",
-      "description": "The author or creator of the Model Card"
-    },
     "citation": {
       "type": "string",
       "description": "Citation information for the Model Card"
@@ -236,7 +232,6 @@
     "version",
     "short_description",
     "full_description",
-    "author",
     "keywords",
     "input_data",
     "input_type",

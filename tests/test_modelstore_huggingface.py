@@ -30,7 +30,6 @@ class TestHuggingFaceStore(unittest.TestCase):
             short_description="A test ResNet model",
             full_description="Testing ResNet model submission",
             keywords="resnet, test",
-            author="test-user",
             input_type="Image",
             category="classification"
         )
@@ -163,7 +162,6 @@ class TestHuggingFaceStore(unittest.TestCase):
             short_description="A test ResNet model",
             full_description="Testing ResNet model submission",
             keywords="resnet, test",
-            author="test-user",
             input_type="Image",
             category="classification"
         )
