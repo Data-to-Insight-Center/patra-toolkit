@@ -14,11 +14,43 @@ The Patra Toolkit is a component of the Patra ModelCards framework designed to s
 
 **Tag**: Foundational-AI
 
----
 
-# How‑To Guides
+# Explanation
 
-## Getting Started
+1. **Encourages Accountability**
+
+   * Incorporate essential model information (metadata, dataset details, fairness, explainability) at training time, ensuring AI models remain transparent from development to deployment.
+
+2. **Semi-Automated Capture**
+
+   * Automated *Fairness* and *Explainability* scanners compute demographic parity, equal odds, SHAP-based feature importances, etc., for easy integration into Model Cards.
+
+3. **Machine-Actionable Model Cards**
+
+   * Produce a structured JSON representation for ingestion into the Patra Knowledge Base. Ideal for advanced queries on model selection, provenance, versioning, or auditing.
+
+4. **Flexible Repository Support**
+
+   * Pluggable backends for storing models/artifacts on **Hugging Face** or **GitHub**, unifying the model publishing workflow.
+
+5. **Versioning & Model Relationship Tracking**
+
+   * Maintain multiple versions of a model with recognized edges (e.g., `revisionOf`, `alternateOf`) using embedding-based similarity. This ensures clear lineages and easy forward/backward provenance.
+
+
+
+# How‑To Guide
+
+## Installation
+
+### From source
+
+Download the release as source code and unzip it.
+```shell
+pip install -e <local_git_dir>/patra_toolkit
+```
+
+### Pip
 
 The latest version can be installed from PyPI:
 
@@ -26,13 +58,9 @@ The latest version can be installed from PyPI:
 pip install patra-toolkit
 ```
 
-For local installation, clone the repository and install using:
 
-```shell
-pip install -e <local_git_dir>/patra_toolkit
-```
 
-# Tutorials
+# Tutorial
 
 ### Create a Model Card
 
@@ -109,7 +137,7 @@ mc.validate()
 mc.save(<file_path>)
 ```
 
-## Submit
+### Submit Model / Model Card
 
 Use `mc.submit()` to either upload just a model card, an AI model along with the model card, just the artifacts, or all at once!
 
@@ -158,41 +186,9 @@ Explore the following example notebooks and model cards to learn more about how 
 
 ---
 
-# Explanation
-
-## Features
-
-1. **Encourages Accountability**
-
-   * Incorporate essential model information (metadata, dataset details, fairness, explainability) at training time, ensuring AI models remain transparent from development to deployment.
-
-2. **Semi-Automated Capture**
-
-   * Automated *Fairness* and *Explainability* scanners compute demographic parity, equal odds, SHAP-based feature importances, etc., for easy integration into Model Cards.
-
-3. **Machine-Actionable Model Cards**
-
-   * Produce a structured JSON representation for ingestion into the Patra Knowledge Base. Ideal for advanced queries on model selection, provenance, versioning, or auditing.
-
-4. **Flexible Repository Support**
-
-   * Pluggable backends for storing models/artifacts on **Hugging Face** or **GitHub**, unifying the model publishing workflow.
-
-5. **Versioning & Model Relationship Tracking**
-
-   * Maintain multiple versions of a model with recognized edges (e.g., `revisionOf`, `alternateOf`) using embedding-based similarity. This ensures clear lineages and easy forward/backward provenance.
-
----
-
 # License
 
 The Patra Model Card toolkit is developed by Indiana University and distributed under the BSD 3-Clause License. See `LICENSE.txt` for more details.
-
----
-
-# References
-
-S. Withana and B. Plale, "Patra ModelCards: AI/ML Accountability in the Edge-Cloud Continuum," 2024 IEEE 20th International Conference on e-Science (e-Science), Osaka, Japan, 2024, pp. 1-10, doi: 10.1109/e-Science62913.2024.10678710. Keywords: Analytical models, Vectors, Edge-cloud continuum, Model cards, AI/ML accountability, Provenance
 
 ---
 
