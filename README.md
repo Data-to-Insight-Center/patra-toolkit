@@ -1,7 +1,5 @@
 <div align="center">
 
-  <img src="docs/logo.png" alt="Patra Toolkit Logo" width="300"/>
-
   # Patra Model Card Toolkit
 
 [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://patra-toolkit.readthedocs.io/en/latest/)
