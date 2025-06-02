@@ -152,8 +152,6 @@ mc.submit(
 )
 ```
 
-The `token` parameter is **optional**. If your hosted Patra server requires authentication, provide a valid token.
-
 If a name-version conflict arises, increment `mc.version`. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
 
 ### [Optional] Authentication with TACC Credentials
