@@ -148,8 +148,7 @@ mc.submit(
     file_format="pt",  # or "h5"
     model_store="huggingface",  # or "github"
     inference_labels="labels.txt",
-    artifacts=[<artifact1_path>, <artifact2_path>],
-    token=<optional_token>  # optional authentication token
+    artifacts=[<artifact1_path>, <artifact2_path>]
 )
 ```
 
@@ -157,7 +156,7 @@ The `token` parameter is **optional**. If your hosted Patra server requires auth
 
 If a name-version conflict arises, increment `mc.version`. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
 
-## Authentication with TACC Credentials
+### [Optional] Authentication with TACC Credentials
 
 To authenticate against a Patra server hosted in TAPIS, use Patra's built-in `authenticate()` method to obtain an access token:
 
@@ -181,17 +180,12 @@ mc.submit(
 
 ## Examples
 
-Explore the following example notebooks and model cards to learn more about how to use the Patra Model Card Toolkit:
-[Notebook Example](./examples/notebooks/GettingStarted.ipynb), [Model Card Example](./examples/model_cards/tesorflow_adult_nn_MC.json)
+Explore the [example notebook](./examples/notebooks/GettingStarted.ipynb) and [example ModelCard](./examples/model_cards/tesorflow_adult_nn_MC.json) to learn more about how to use the Patra Model Card Toolkit
 
----
-
-# License
+## License
 
 The Patra Model Card toolkit is developed by Indiana University and distributed under the BSD 3-Clause License. See `LICENSE.txt` for more details.
 
----
-
-# Acknowledgements
+## Acknowledgements
 
 This research is funded in part through the National Science Foundation under award #2112606, AI Institute for Intelligent CyberInfrastructure with Computational Learning in the Environment (ICICLE), and in part through Data to Insight Center (D2I) at Indiana University.
