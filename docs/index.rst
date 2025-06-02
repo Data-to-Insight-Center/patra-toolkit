@@ -141,8 +141,39 @@ Validate and Save the Model Card
 Submit
 ------
 
-Use ``mc.submit()`` to register only a model card, an AI model along with the model card,
-just the artifacts, or all at once!
+When calling ``mc.submit()``, pass the following keyword arguments:
+
+- **patra_server_url (str, required)**
+  Base URL of the Patra Server’s REST API (e.g., ``"https://patra.example.org"``).
+
+- **model (object or filepath, optional)**
+  - A Python object implementing a `.save()` method (e.g., Keras `Model`) — Patra Toolkit will call `model.save(...)` to serialize.
+  - Or, a local file path (e.g., `"./trained_model.pt"`) for an existing saved model.
+  If omitted, only the Model Card JSON is sent.
+
+- **file_format (str, optional)**
+  File extension/format for saving the model. Common values:
+  - `"pt"`   (PyTorch)
+  - `"h5"`   (Keras)
+  - `"onnx"` (ONNX)
+  If you supply `model`, you must also specify `file_format`. Ignored otherwise.
+
+- **model_store (str, optional)**
+  Backend for storing the model and artifacts. Valid values:
+  - `"huggingface"` — Upload to a Hugging Face repository.
+  - `"github"`      — Upload to a GitHub repository under the Patra Server organization.
+  Not used if no model or artifacts are provided.
+
+- **inference_labels (str or list[str], optional)**
+  Path(s) to file(s) containing inference labels (e.g., class names). These are uploaded alongside the model.
+
+- **artifacts (list[str], optional)**
+  List of additional file paths to upload (e.g., plots, data files, metrics). Each will be stored in the same repository.
+
+- **token (str, optional)**
+  A valid TAPIS JWT (JSON Web Token) for authentication.
+  - For a public Patra Server, omit this parameter.
+  - For an authenticated server, supplying a valid `token` is mandatory; otherwise, you will get an HTTP 401 Unauthorized error.
 
 .. code-block:: python
 
