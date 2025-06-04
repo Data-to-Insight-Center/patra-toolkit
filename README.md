@@ -1,5 +1,7 @@
 <div align="center">
 
+ <img src="docs/logo.png" alt="Patra Toolkit Logo" width="300"/>
+
   # Patra Model Card Toolkit
 
 [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://patra-toolkit.readthedocs.io/en/latest/)
@@ -64,7 +66,7 @@ pip install patra-toolkit
 
 ### Create a Model Card
 
-Find the descriptions of the Model Card parameters in the [schema descriptions document](./docs/schema_description.md).
+Find the descriptions of the Model Card parameters in the [schema descriptions document](./docs/source/schema_description.md).
 
 ```python
 from patra_toolkit import ModelCard
@@ -104,7 +106,7 @@ ai_model = AIModel(
 )
 
 # Populate Model Structure
-a i_model.populate_model_structure(trained_model)
+ai_model.populate_model_structure(trained_model)
 mc.ai_model = ai_model
 
 # Add Custom Metrics
@@ -137,22 +139,23 @@ mc.validate()
 mc.save(<file_path>)
 ```
 
-### Submit Model / Model Card
+### Submit the Model and its Model Card
 
-Use `mc.submit()` to either upload just a model card, an AI model along with the model card, just the artifacts, or all at once!
+Call `submit()` to submit a model card, an AI model, the artifacts, or all at once!
+
+Patra currently supports uploading models (as ".pt" or ".h5" files) and artifacts to Hugging Face and GitHub. Refer the [official documentation](https://patra-toolkit.readthedocs.io/) for more details.
 
 ```python
 mc.submit(
     patra_server_url=<patra_server_url>,
-    model=<trained_model>,
-    file_format="pt",  # or "h5"
-    model_store="huggingface",  # or "github"
-    inference_labels="labels.txt",
+    model=ai_model,
+    file_format="pt",
+    model_store="huggingface",
     artifacts=[<artifact1_path>, <artifact2_path>]
 )
 ```
 
-If a name-version conflict arises, increment `mc.version`. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
+If a name-version conflict arises, increment the `version`. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
 
 ### [Optional] Authentication with TACC Credentials
 
@@ -166,7 +169,7 @@ mc = ModelCard(...)
 tapis_token = mc.authenticate(username="<your_tacc_username>", password="<your_tacc_password>")
 ```
 
-This will print and return a valid `X-Tapis-Token` (JWT). You can then pass this token to `mc.submit()`:
+This will print and return a valid `X-Tapis-Token` (JWT). You can then pass this token while calling `submit()`.
 
 ```python
 mc.submit(
@@ -178,7 +181,7 @@ mc.submit(
 
 ## Examples
 
-Explore the [example notebook](./examples/notebooks/GettingStarted.ipynb) and [example ModelCard](./examples/model_cards/tesorflow_adult_nn_MC.json) to learn more about how to use the Patra Model Card Toolkit
+Explore the [example notebook](./examples/notebooks/GettingStarted.ipynb) and [example ModelCard](./examples/model_cards/tesorflow_adult_nn_MC.json) to learn more about how to use the Patra Model Card Toolkit.
 
 ## License
 
