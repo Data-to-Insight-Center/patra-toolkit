@@ -139,7 +139,7 @@ mc.validate()
 mc.save(<file_path>)
 ```
 
-### Submit the Model and its Model Card
+### Submit
 
 Call `submit()` to submit a model card, an AI model, the artifacts, or all at once!
 
