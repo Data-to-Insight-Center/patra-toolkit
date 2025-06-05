@@ -17,42 +17,23 @@ The Patra Toolkit is a component of the Patra ModelCards framework designed to s
 **Tag**: CI4AI, Software, PADI
 
 
-# Explanation
+## Explanation
 
-1. **Encourages Accountability**
-
-   * Incorporate essential model information (metadata, dataset details, fairness, explainability) at training time, ensuring AI models remain transparent from development to deployment.
-
-2. **Semi-Automated Capture**
-
-   * Automated *Fairness* and *Explainability* scanners compute demographic parity, equal odds, SHAP-based feature importances, etc., for easy integration into Model Cards.
-
-3. **Machine-Actionable Model Cards**
-
-   * Produce a structured JSON representation for ingestion into the Patra Knowledge Base. Ideal for advanced queries on model selection, provenance, versioning, or auditing.
-
-4. **Flexible Repository Support**
-
-   * Pluggable backends for storing models/artifacts on **Hugging Face** or **GitHub**, unifying the model publishing workflow.
-
-5. **Versioning & Model Relationship Tracking**
-
-   * Maintain multiple versions of a model with recognized edges (e.g., `revisionOf`, `alternateOf`) using embedding-based similarity. This ensures clear lineages and easy forward/backward provenance.
+The Patra Toolkit encourages accountability by requiring essential model information — dataset, fairness, and explainability — at training time, ensuring transparency from development to deployment. It offers semi-automated capture of fairness and explainability metrics using integrated scanners. The toolkit produces machine-actionable Model Cards in structured JSON format, enabling advanced queries on model selection, provenance, versioning, and auditing within the Patra Knowledge Base. Flexible repository support is provided through pluggable backends for storing models and artifacts on platforms like Hugging Face or GitHub, streamlining the model publishing workflow. Additionally, the toolkit supports versioning and model relationship tracking, allowing users to maintain multiple versions of a model with recognized relationships (such as `revisionOf` or `alternateOf`) using embedding-based similarity, which ensures clear lineages and straightforward provenance tracking.
 
 
+## How‑To Guide
 
-# How‑To Guide
+### Installation
 
-## Installation
-
-### From source
+#### From source
 
 Download the release as source code and unzip it.
 ```shell
 pip install -e <local_git_dir>/patra_toolkit
 ```
 
-### Pip
+#### Pip
 
 The latest version can be installed from PyPI:
 
@@ -60,9 +41,7 @@ The latest version can be installed from PyPI:
 pip install patra-toolkit
 ```
 
-
-
-# Tutorial
+## Tutorial
 
 ### Create a Model Card
 
@@ -130,8 +109,6 @@ mc.populate_bias(X_test, y_test, predictions, "gender", X_test['sex'], clf)
 mc.populate_xai(X_test, x_columns, model, top_n=10)
 ```
 
-### Validate and Save the Model Card
-
 The Model Card is validated against the schema to ensure it meets the required structure and content. After validation, you can save the Model Card to a file in JSON format.
 
 ```python
@@ -164,7 +141,7 @@ Patra assigns each model a PID in the format `<author_id>-<model_name>-<model_ve
 
 For example, the PID for the above model would be `neelk-random_forest-0.1`. This PID can be used to reference the model in the Patra Knowledge Base.
 
-### TAPIS Authentication
+### [Optional] TAPIS Authentication
 
 Patra servers hosted as TAPIS pods require authentication using a JWT (JSON Web Token) for secure access. To generate this token, you must authenticate with your TACC credentials. Use the Patra `authenticate()` method to obtain an access token for TAPIS-hosted Patra servers:
 
