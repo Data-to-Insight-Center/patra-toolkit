@@ -2,7 +2,7 @@
 
  <img src="docs/logo.png" alt="Patra Toolkit Logo" width="300"/>
 
-  # Patra Model Card Toolkit
+# Patra Model Card Toolkit
 
 [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://patra-toolkit.readthedocs.io/en/latest/)
 [![Build Status](https://github.com/Data-to-Insight-Center/patra-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-to-Insight-Center/patra-toolkit/actions)
@@ -72,12 +72,12 @@ Find the descriptions of the Model Card parameters in the [schema descriptions d
 from patra_toolkit import ModelCard
 
 mc = ModelCard(
-  name="UCI Adult Data Analysis model using Tensorflow",
+  name="Random Forest",
   version="0.1",
   short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
   full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
   keywords="uci adult, tensorflow, explainability, fairness, patra",
-  author="Sachith Withana",
+  author="neelk",
   input_type="Tabular",
   category="classification",
   foundational_model="None"
@@ -94,10 +94,10 @@ mc.output_data = 'https://huggingface.co/Data-to-Insight-Center/UCI-Adult'
 from patra_toolkit import AIModel
 
 ai_model = AIModel(
-  name="UCI Adult Random Forest model",
+  name="Random Forest",
   version="0.1",
   description="Census classification problem using Random Forest",
-  owner="Sachith Withana",
+  owner="neelk",
   location="https://github.iu.edu/swithana/mcwork/randomforest/adult_model.pkl",
   license="BSD-3 Clause",
   framework="sklearn",
@@ -156,30 +156,24 @@ mc.submit(
 ```
 
 ### Persistent Identifier (PID) Generation
-Patra assigns each model a PID in the format `<author_id>:<model_name>:<model_version>`. The PID is generated based on the `name`, `version`, and `author` fields of the Model Card. If a name-version conflict arises, increment the `version` field on the Model Card. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
+Patra assigns each model a PID in the format `<author_id>-<model_name>-<model_version>`. The PID is generated based on the `name`, `version`, and `author` fields of the Model Card. If a name-version conflict arises, increment the `version` field on the Model Card. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
 
-### [Optional] Authentication with TACC Credentials
+For example, the PID for the above model would be `neelk-random_forest-0.1`. This PID can be used to reference the model in the Patra Knowledge Base.
 
-To authenticate against a Patra server hosted in TAPIS, use Patra's built-in `authenticate()` method to obtain an access token:
+### TAPIS Authentication
 
+Patra servers hosted as TAPIS pods require authentication using a JWT (JSON Web Token) for secure access. To generate this token, you must authenticate with your TACC credentials. Use the Patra `authenticate()` method to obtain an access token for TAPIS-hosted Patra servers:
 ```python
 from patra_toolkit import ModelCard
-
 mc = ModelCard(...)
-
 tapis_token = mc.authenticate(username="<your_tacc_username>", password="<your_tacc_password>")
-```
 
-This will return a valid `X-Tapis-Token` (JWT) which you can pass while calling `submit()`.
-
-```python
 mc.submit(
     patra_server_url=<tapis_hosted_patra_server_url>,
-    model=<trained_model>,
     token=tapis_token
 )
 ```
-To ensure uniqueness, the `author` field in the Model Card will automatically be set to your TACC username. This ensures that no two models can have the same author, name, and version combination.
+The `author` field in the Model Card will automatically be set to your TACC username. This ensures that no two models can have the same author, name, and version combination.
 
 ## Examples
 
