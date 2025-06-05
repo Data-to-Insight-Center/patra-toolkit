@@ -1,13 +1,12 @@
 ## [0.2.0]
 
-> **Highlights:** First feature expansion after the initial public release.  
-> Introduces modular model‑store uploads, richer logging, and a more resilient `submit()` workflow.
+> Introduces modular model uploads, richer logging, and a more resilient `submit()` workflow.
 
 ### Added
-- **Model‑store abstraction** with `get_model_store()` and back‑ends for **Hugging Face** and **GitHub**.
+- **Model‑store abstraction** with `get_model_store()` and back‑ends for **Hugging Face** and **GitHub**.
 - **`ensure_package_installed()`** helper for on‑demand installation of optional dependencies (`torch`, `tensorflow`, `huggingface_hub`, `PyGithub`).
 - **`PatraIDGenerationError`** for precise error propagation during PID creation, credential retrieval, and server interactions.
-- **Citation support** (`citation` field) in `ModelCard` for easy academic referencing.
+- **Citation support** (`citation` field) in `ModelCard` for easy academic referencing.
 - **Inference‑label uploads** via new `inference_labels` argument in `submit()` and corresponding `AIModel.inference_labels` field.
 - **Flexible model serialization** — supports **PyTorch** (`pt`, `onnx`) and **TensorFlow** (`h5`) models.
 - **Rich logging** throughout the submission workflow (`logging.INFO` default) replacing print statements.
@@ -28,8 +27,7 @@
 
 ## [0.1.1]
 
-> **Note:** Version `0.1.1` is the **first public release** of the Patra Toolkit.  
-> The project originally intended to start at `0.0.0`, but versioning began at `0.1.1` because of an initial packaging oversight.
+> **Note:** Version `0.1.1` is the **first public release** of the Patra Toolkit.  
 
 ### Added
 - **Structured schema** for capturing essential model metadata (purpose, datasets, performance metrics).
