@@ -120,6 +120,8 @@ ai_model.add_metric("Input Shape", "(26048, 100)")
 
 ### Run Fairness and Explainability Scanners
 
+Patra provides the `demographic_parity_difference` (the difference in the probability of a positive outcome between two groups) and `equalized_odds_difference` (the difference in true positive rates between two groups) using the `fairlearn` library. The explainability metrics are computed using the `shap` library.
+
 ```python
 # To assess fairness, provide the sensitive feature, test data, labels, and predictions
 mc.populate_bias(X_test, y_test, predictions, "gender", X_test['sex'], clf)
@@ -129,6 +131,8 @@ mc.populate_xai(X_test, x_columns, model, top_n=10)
 ```
 
 ### Validate and Save the Model Card
+
+The Model Card is validated against the schema to ensure it meets the required structure and content. After validation, you can save the Model Card to a file in JSON format.
 
 ```python
 # Capture Python package dependencies and versions
@@ -141,7 +145,7 @@ mc.save(<file_path>)
 
 ### Submit
 
-Call `submit()` to submit a model card, an AI model, the artifacts, or all at once!
+The `submit()` method allows you to upload the Model Card, the AI model, and any associated artifacts (like trained models or datasets) to a specified Patra server.
 
 Patra currently supports uploading models (as ".pt" or ".h5" files) and artifacts to Hugging Face and GitHub. Refer the [official documentation](https://patra-toolkit.readthedocs.io/) for more details.
 
@@ -163,6 +167,7 @@ For example, the PID for the above model would be `neelk-random_forest-0.1`. Thi
 ### TAPIS Authentication
 
 Patra servers hosted as TAPIS pods require authentication using a JWT (JSON Web Token) for secure access. To generate this token, you must authenticate with your TACC credentials. Use the Patra `authenticate()` method to obtain an access token for TAPIS-hosted Patra servers:
+
 ```python
 from patra_toolkit import ModelCard
 mc = ModelCard(...)
