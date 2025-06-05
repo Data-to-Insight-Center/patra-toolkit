@@ -155,7 +155,8 @@ mc.submit(
 )
 ```
 
-If a name-version conflict arises, increment the `version`. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
+### Persistent Identifier (PID) Generation
+Patra assigns each model a PID in the format `<author_id>:<model_name>:<model_version>`. The PID is generated based on the `name`, `version`, and `author` fields of the Model Card. If a name-version conflict arises, increment the `version` field on the Model Card. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
 
 ### [Optional] Authentication with TACC Credentials
 
@@ -169,7 +170,7 @@ mc = ModelCard(...)
 tapis_token = mc.authenticate(username="<your_tacc_username>", password="<your_tacc_password>")
 ```
 
-This will print and return a valid `X-Tapis-Token` (JWT). You can then pass this token while calling `submit()`.
+This will return a valid `X-Tapis-Token` (JWT) which you can pass while calling `submit()`.
 
 ```python
 mc.submit(
@@ -178,6 +179,7 @@ mc.submit(
     token=tapis_token
 )
 ```
+To ensure uniqueness, the `author` field in the Model Card will automatically be set to your TACC username. This ensures that no two models can have the same author, name, and version combination.
 
 ## Examples
 
