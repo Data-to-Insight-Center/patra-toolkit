@@ -19,7 +19,7 @@ The Patra Toolkit is a component of the Patra ModelCards framework designed to s
 
 ## Explanation
 
-The Patra Toolkit encourages accountability by requiring essential model information — dataset, fairness, and explainability — at training time, ensuring transparency from development to deployment. It offers semi-automated capture of fairness and explainability metrics using integrated scanners. The toolkit produces machine-actionable Model Cards in structured JSON format, enabling advanced queries on model selection, provenance, versioning, and auditing within the Patra Knowledge Base. Flexible repository support is provided through pluggable backends for storing models and artifacts on platforms like Hugging Face or GitHub, streamlining the model publishing workflow. Additionally, the toolkit supports versioning and model relationship tracking, allowing users to maintain multiple versions of a model with recognized relationships (such as `revisionOf` or `alternateOf`) using embedding-based similarity, which ensures clear lineages and straightforward provenance tracking.
+The Patra Toolkit embeds transparency and governance directly into the training workflow. Integrated scanners collect essential metadata—data sources, fairness metrics, and explainability insights—during model training and then generate a machine‑actionable JSON model card. These cards plug into the Patra Knowledge Base for rich queries on provenance, version history, and auditing. Flexible back‑ends publish models and artifacts to repositories such as Hugging Face or GitHub, automatically recording lineage links to trace every model’s evolution.
 
 
 ## How‑To Guide
@@ -43,7 +43,9 @@ pip install patra-toolkit
 
 ## Tutorial
 
-### Create a Model Card
+### Building a Patra Model Card
+
+We start with essential metadata like name, version, short description, and so on.
 
 Find the descriptions of the Model Card parameters in the [schema descriptions document](./docs/source/schema_description.md).
 
@@ -51,23 +53,25 @@ Find the descriptions of the Model Card parameters in the [schema descriptions d
 from patra_toolkit import ModelCard
 
 mc = ModelCard(
-  name="Random Forest",
-  version="0.1",
+  name="UCI_Adult_Model",
+  version="1.0",
   short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
   full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
   keywords="uci adult, tensorflow, explainability, fairness, patra",
   author="neelk",
   input_type="Tabular",
   category="classification",
-  foundational_model="None"
+  foundational_model="None",
+   citation="Becker, B. & Kohavi, R. (1996). Adult [Dataset]. UCI."
 )
 
 # Add Model Metadata
 mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
-mc.output_data = 'https://huggingface.co/Data-to-Insight-Center/UCI-Adult'
+mc.output_data = 'https://huggingface.co/patra-iu/neelk-uci_adult_model-1.0'
 ```
 
 ### Initialize an AI/ML Model
+Here we describe the model's ownership, license, performance metrics, etc.
 
 ```python
 from patra_toolkit import AIModel
@@ -109,7 +113,7 @@ mc.populate_bias(X_test, y_test, predictions, "gender", X_test['sex'], clf)
 mc.populate_xai(X_test, x_columns, model, top_n=10)
 ```
 
-The Model Card is validated against the schema to ensure it meets the required structure and content. After validation, you can save the Model Card to a file in JSON format.
+The Model Card is validated against the schema to ensure it meets the required structure and content. After validation, you can save the Model Card to a file in JSON format. 
 
 ```python
 # Capture Python package dependencies and versions
@@ -143,7 +147,7 @@ For example, the PID for the above model would be `neelk-random_forest-0.1`. Thi
 
 ### [Optional] TAPIS Authentication
 
-Patra servers hosted as TAPIS pods require authentication using a JWT (JSON Web Token) for secure access. To generate this token, you must authenticate with your TACC credentials. Use the Patra `authenticate()` method to obtain an access token for TAPIS-hosted Patra servers:
+Patra servers hosted as TAPIS pods require authentication using a JWT (JSON Web Token) for secure access. To generate this token, you must authenticate with your TACC credentials. If you do not already have a TACC account, you can create one at [https://accounts.tacc.utexas.edu/begin](https://accounts.tacc.utexas.edu/begin). Use the Patra `authenticate()` method to obtain an access token for TAPIS-hosted Patra servers:
 
 ```python
 from patra_toolkit import ModelCard
