@@ -355,7 +355,7 @@ class ModelCard:
         try:
             with open(file_location, 'w', encoding='utf-8') as json_file:
                 json_file.write(str(self))
-            logging.info(f"Model card saved to {file_location}.")
+            logging.info(f"Model card created.")
         except IOError as io_err:
             logging.error(f"Failed to save model card: {io_err}")
 
@@ -450,6 +450,18 @@ class ModelCard:
                     logging.info(f"Model uploaded at: {model_upload_location}")
                     self.ai_model.location = model_upload_location
                     self.output_data = self._extract_repository_link(model_upload_location, model_store)
+
+                    model_card_location = os.path.join(tempfile.gettempdir(), "model_card.json")
+                    self.save(model_card_location)
+                    model_card_upload_location = backend.upload(model_card_location, self.id, credentials)
+                    logging.info(f"Model card uploaded at: {model_card_upload_location}")
+
+                    readme_content = f"# Model Card available at: {model_card_upload_location}"
+                    readme_path = os.path.join(tempfile.gettempdir(), "README.md")
+                    with open(readme_path, 'w', encoding='utf-8') as readme_file:
+                        readme_file.write(readme_content)
+                    readme_upload_location = backend.upload(readme_path, self.id, credentials)
+
                 except Exception as e:
                     logging.error(f"Model submission failed during model upload: {e}")
                     try:
