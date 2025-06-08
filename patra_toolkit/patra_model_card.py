@@ -408,7 +408,7 @@ class ModelCard:
             self.id = self._get_model_id(patra_server_url, token, is_uploading_model)
             logging.info(f"PID created: {self.id}")
             # Update author in the model card to the authenticated user
-            self.author = self.id.split("-")[0]
+            # self.author = self.id.split("-")[0]
         except PatraIDGenerationError as pid_exc:
             logging.error(f"Model submission failed during model ID creation: {pid_exc}")
             return None
@@ -602,7 +602,7 @@ class ModelCard:
         if torch_module is not None and torch_nn is not None and isinstance(model, torch_nn.Module):
             # Allow saving state_dict to either "pt" or "h5"
             if file_format.lower() in ["pt", "h5"]:
-                torch_module.save(model.state_dict(), path)
+                torch_module.save(model, path)
             elif file_format.lower() == "onnx":
                 dummy_input = torch_module.randn(1, 3, 224, 224)
                 torch_module.onnx.export(model, dummy_input, path)
