@@ -1,6 +1,8 @@
 <div align="center">
 
-  # Patra Model Card Toolkit
+ <img src="docs/logo.png" alt="Patra Toolkit Logo" width="300"/>
+
+# Patra Model Card Toolkit
 
 [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://patra-toolkit.readthedocs.io/en/latest/)
 [![Build Status](https://github.com/Data-to-Insight-Center/patra-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-to-Insight-Center/patra-toolkit/actions)
@@ -15,42 +17,23 @@ The Patra Toolkit is a component of the Patra ModelCards framework designed to s
 **Tag**: CI4AI, Software, PADI
 
 
-# Explanation
+## Explanation
 
-1. **Encourages Accountability**
-
-   * Incorporate essential model information (metadata, dataset details, fairness, explainability) at training time, ensuring AI models remain transparent from development to deployment.
-
-2. **Semi-Automated Capture**
-
-   * Automated *Fairness* and *Explainability* scanners compute demographic parity, equal odds, SHAP-based feature importances, etc., for easy integration into Model Cards.
-
-3. **Machine-Actionable Model Cards**
-
-   * Produce a structured JSON representation for ingestion into the Patra Knowledge Base. Ideal for advanced queries on model selection, provenance, versioning, or auditing.
-
-4. **Flexible Repository Support**
-
-   * Pluggable backends for storing models/artifacts on **Hugging Face** or **GitHub**, unifying the model publishing workflow.
-
-5. **Versioning & Model Relationship Tracking**
-
-   * Maintain multiple versions of a model with recognized edges (e.g., `revisionOf`, `alternateOf`) using embedding-based similarity. This ensures clear lineages and easy forward/backward provenance.
+The Patra Toolkit embeds transparency and governance directly into the training workflow. Integrated scanners collect essential metadata—data sources, fairness metrics, and explainability insights—during model training and then generate a machine‑actionable JSON model card. These cards plug into the Patra Knowledge Base for rich queries on provenance, version history, and auditing. Flexible back‑ends publish models and artifacts to repositories such as Hugging Face or GitHub, automatically recording lineage links to trace every model’s evolution.
 
 
+## How‑To Guide
 
-# How‑To Guide
+### Installation
 
-## Installation
-
-### From source
+#### From source
 
 Download the release as source code and unzip it.
 ```shell
 pip install -e <local_git_dir>/patra_toolkit
 ```
 
-### Pip
+#### Pip
 
 The latest version can be installed from PyPI:
 
@@ -58,44 +41,46 @@ The latest version can be installed from PyPI:
 pip install patra-toolkit
 ```
 
+## Tutorial
 
+### Building a Patra Model Card
 
-# Tutorial
+We start with essential metadata like name, version, short description, and so on.
 
-### Create a Model Card
-
-Find the descriptions of the Model Card parameters in the [schema descriptions document](./docs/schema_description.md).
+Find the descriptions of the Model Card parameters in the [schema descriptions document](./docs/source/schema_description.md).
 
 ```python
 from patra_toolkit import ModelCard
 
 mc = ModelCard(
-  name="UCI Adult Data Analysis model using Tensorflow",
-  version="0.1",
+  name="UCI_Adult_Model",
+  version="1.0",
   short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
   full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
   keywords="uci adult, tensorflow, explainability, fairness, patra",
-  author="Sachith Withana",
+  author="neelk",
   input_type="Tabular",
   category="classification",
-  foundational_model="None"
+  foundational_model="None",
+   citation="Becker, B. & Kohavi, R. (1996). Adult [Dataset]. UCI."
 )
 
 # Add Model Metadata
 mc.input_data = 'https://archive.ics.uci.edu/dataset/2/adult'
-mc.output_data = 'https://huggingface.co/Data-to-Insight-Center/UCI-Adult'
+mc.output_data = 'https://huggingface.co/patra-iu/neelk-uci_adult_model-1.0'
 ```
 
 ### Initialize an AI/ML Model
+Here we describe the model's ownership, license, performance metrics, etc.
 
 ```python
 from patra_toolkit import AIModel
 
 ai_model = AIModel(
-  name="UCI Adult Random Forest model",
+  name="Random Forest",
   version="0.1",
   description="Census classification problem using Random Forest",
-  owner="Sachith Withana",
+  owner="neelk",
   location="https://github.iu.edu/swithana/mcwork/randomforest/adult_model.pkl",
   license="BSD-3 Clause",
   framework="sklearn",
@@ -104,7 +89,7 @@ ai_model = AIModel(
 )
 
 # Populate Model Structure
-a i_model.populate_model_structure(trained_model)
+ai_model.populate_model_structure(trained_model)
 mc.ai_model = ai_model
 
 # Add Custom Metrics
@@ -118,6 +103,8 @@ ai_model.add_metric("Input Shape", "(26048, 100)")
 
 ### Run Fairness and Explainability Scanners
 
+Patra provides the `demographic_parity_difference` (the difference in the probability of a positive outcome between two groups) and `equalized_odds_difference` (the difference in true positive rates between two groups) using the `fairlearn` library. The explainability metrics are computed using the `shap` library.
+
 ```python
 # To assess fairness, provide the sensitive feature, test data, labels, and predictions
 mc.populate_bias(X_test, y_test, predictions, "gender", X_test['sex'], clf)
@@ -126,7 +113,7 @@ mc.populate_bias(X_test, y_test, predictions, "gender", X_test['sex'], clf)
 mc.populate_xai(X_test, x_columns, model, top_n=10)
 ```
 
-### Validate and Save the Model Card
+The Model Card is validated against the schema to ensure it meets the required structure and content. After validation, you can save the Model Card to a file in JSON format. 
 
 ```python
 # Capture Python package dependencies and versions
@@ -137,48 +124,46 @@ mc.validate()
 mc.save(<file_path>)
 ```
 
-### Submit Model / Model Card
+### Submit
 
-Use `mc.submit()` to either upload just a model card, an AI model along with the model card, just the artifacts, or all at once!
+The `submit()` method allows you to upload the Model Card, the AI model, and any associated artifacts (like trained models or datasets) to a specified Patra server.
+
+Patra currently supports uploading models (as ".pt" or ".h5" files) and artifacts to Hugging Face and GitHub. Refer the [official documentation](https://patra-toolkit.readthedocs.io/) for more details.
 
 ```python
 mc.submit(
     patra_server_url=<patra_server_url>,
-    model=<trained_model>,
-    file_format="pt",  # or "h5"
-    model_store="huggingface",  # or "github"
-    inference_labels="labels.txt",
+    model=ai_model,
+    file_format="pt",
+    model_store="huggingface",
     artifacts=[<artifact1_path>, <artifact2_path>]
 )
 ```
 
-If a name-version conflict arises, increment `mc.version`. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
+### Persistent Identifier (PID) Generation
+Patra assigns each model a PID in the format `<author_id>-<model_name>-<model_version>`. The PID is generated based on the `name`, `version`, and `author` fields of the Model Card. If a name-version conflict arises, increment the `version` field on the Model Card. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
 
-### [Optional] Authentication with TACC Credentials
+For example, the PID for the above model would be `neelk-random_forest-0.1`. This PID can be used to reference the model in the Patra Knowledge Base.
 
-To authenticate against a Patra server hosted in TAPIS, use Patra's built-in `authenticate()` method to obtain an access token:
+### [Optional] TAPIS Authentication
+
+Patra servers hosted as TAPIS pods require authentication using a JWT (JSON Web Token) for secure access. To generate this token, you must authenticate with your TACC credentials. If you do not already have a TACC account, you can create one at [https://accounts.tacc.utexas.edu/begin](https://accounts.tacc.utexas.edu/begin). Use the Patra `authenticate()` method to obtain an access token for TAPIS-hosted Patra servers:
 
 ```python
 from patra_toolkit import ModelCard
-
 mc = ModelCard(...)
-
 tapis_token = mc.authenticate(username="<your_tacc_username>", password="<your_tacc_password>")
-```
 
-This will print and return a valid `X-Tapis-Token` (JWT). You can then pass this token to `mc.submit()`:
-
-```python
 mc.submit(
     patra_server_url=<tapis_hosted_patra_server_url>,
-    model=<trained_model>,
     token=tapis_token
 )
 ```
+The `author` field in the Model Card will automatically be set to your TACC username. This ensures that no two models can have the same author, name, and version combination.
 
 ## Examples
 
-Explore the [example notebook](./examples/notebooks/GettingStarted.ipynb) and [example ModelCard](./examples/model_cards/tesorflow_adult_nn_MC.json) to learn more about how to use the Patra Model Card Toolkit
+Explore the [example notebook](./examples/notebooks/GettingStarted.ipynb) and [example ModelCard](./examples/model_cards/tesorflow_adult_nn_MC.json) to learn more about how to use the Patra Model Card Toolkit.
 
 ## License
 

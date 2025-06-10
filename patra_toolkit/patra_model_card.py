@@ -355,7 +355,7 @@ class ModelCard:
         try:
             with open(file_location, 'w', encoding='utf-8') as json_file:
                 json_file.write(str(self))
-            logging.info(f"Model card saved to {file_location}.")
+            logging.info(f"Model card created.")
         except IOError as io_err:
             logging.error(f"Failed to save model card: {io_err}")
 
@@ -408,7 +408,7 @@ class ModelCard:
             self.id = self._get_model_id(patra_server_url, token, is_uploading_model)
             logging.info(f"PID created: {self.id}")
             # Update author in the model card to the authenticated user
-            self.author = self.id.split("-")[0]
+            # self.author = self.id.split("-")[0]
         except PatraIDGenerationError as pid_exc:
             logging.error(f"Model submission failed during model ID creation: {pid_exc}")
             return None
@@ -450,6 +450,18 @@ class ModelCard:
                     logging.info(f"Model uploaded at: {model_upload_location}")
                     self.ai_model.location = model_upload_location
                     self.output_data = self._extract_repository_link(model_upload_location, model_store)
+
+                    model_card_location = os.path.join(tempfile.gettempdir(), "model_card.json")
+                    self.save(model_card_location)
+                    model_card_upload_location = backend.upload(model_card_location, self.id, credentials)
+                    logging.info(f"Model card uploaded at: {model_card_upload_location}")
+
+                    readme_content = f"# Model Card available at: {model_card_upload_location}"
+                    readme_path = os.path.join(tempfile.gettempdir(), "README.md")
+                    with open(readme_path, 'w', encoding='utf-8') as readme_file:
+                        readme_file.write(readme_content)
+                    readme_upload_location = backend.upload(readme_path, self.id, credentials)
+
                 except Exception as e:
                     logging.error(f"Model submission failed during model upload: {e}")
                     try:
@@ -602,7 +614,7 @@ class ModelCard:
         if torch_module is not None and torch_nn is not None and isinstance(model, torch_nn.Module):
             # Allow saving state_dict to either "pt" or "h5"
             if file_format.lower() in ["pt", "h5"]:
-                torch_module.save(model.state_dict(), path)
+                torch_module.save(model, path)
             elif file_format.lower() == "onnx":
                 dummy_input = torch_module.randn(1, 3, 224, 224)
                 torch_module.onnx.export(model, dummy_input, path)
