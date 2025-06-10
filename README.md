@@ -2,7 +2,7 @@
 
  <img src="docs/logo.png" alt="Patra Toolkit Logo" width="300"/>
 
-# Patra Model Card Toolkit
+# Patra Model Cards Toolkit
 
 [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://patra-toolkit.readthedocs.io/en/latest/)
 [![Build Status](https://github.com/Data-to-Insight-Center/patra-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-to-Insight-Center/patra-toolkit/actions)
