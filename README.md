@@ -167,7 +167,7 @@ Explore the [example notebook](./examples/notebooks/GettingStarted.ipynb) and [e
 
 ## License
 
-The **Patra Knowledge Base** is copyrighted by the **Indiana University Board of Trustees** and distributed under the **BSD 3-Clause License**. See the `LICENSE.txt` file for more details.
+The **Patra Model Cards Toolkit** is copyrighted by the **Indiana University Board of Trustees** and distributed under the **BSD 3-Clause License**. See the `LICENSE.txt` file for more details.
 
 ## Acknowledgements
 
