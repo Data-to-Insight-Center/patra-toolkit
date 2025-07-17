@@ -26,19 +26,14 @@ The Patra Toolkit embeds transparency and governance directly into the training 
 
 ### Installation
 
-#### From source
-
-Download the release as source code and unzip it.
-```shell
-pip install -e <local_git_dir>/patra_toolkit
-```
-
-#### Pip
-
-The latest version can be installed from PyPI:
-
+#### From Pip (Recommended)
 ```shell
 pip install patra-toolkit
+```
+
+#### From GitHub (for the latest development version)
+```shell
+pip install git+https://github.com/Data-to-Insight-Center/patra-toolkit
 ```
 
 ## Tutorial
