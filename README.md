@@ -53,11 +53,11 @@ mc = ModelCard(
   short_description="UCI Adult Data analysis using Tensorflow for demonstration of Patra Model Cards.",
   full_description="We have trained a ML model using the tensorflow framework to predict income for the UCI Adult Dataset. We leverage this data to run the Patra model cards to capture metadata about the model as well as fairness and explainability metrics.",
   keywords="uci adult, tensorflow, explainability, fairness, patra",
-  author="neelk",
+  author="0009-0009-9817-7042",
   input_type="Tabular",
   category="classification",
   foundational_model="None",
-   citation="Becker, B. & Kohavi, R. (1996). Adult [Dataset]. UCI."
+  citation="Becker, B. & Kohavi, R. (1996). Adult [Dataset]. UCI."
 )
 
 # Add Model Metadata
@@ -121,7 +121,7 @@ mc.save(<file_path>)
 
 ### Submit
 
-The `submit()` method allows you to upload the Model Card, the AI model, and any associated artifacts (like trained models or datasets) to a specified Patra server.
+The `submit()` method allows you to upload the Model Card, the AI model, and any associated artifacts (like trained models or datasets) to a specified [Patra server](https://github.com/Data-to-Insight-Center/patra-kg).
 
 Patra currently supports uploading models (as ".pt" or ".h5" files) and artifacts to Hugging Face and GitHub. Refer the [official documentation](https://patra-toolkit.readthedocs.io/) for more details.
 
@@ -138,7 +138,7 @@ mc.submit(
 ### Persistent Identifier (PID) Generation
 Patra assigns each model a PID in the format `<author_id>-<model_name>-<model_version>`. The PID is generated based on the `name`, `version`, and `author` fields of the Model Card. If a name-version conflict arises, increment the `version` field on the Model Card. In case of failure, `submit()` attempts partial rollbacks to avoid orphaned uploads.
 
-For example, the PID for the above model would be `neelk-random_forest-0.1`. This PID can be used to reference the model in the Patra Knowledge Base.
+For example, the PID for the above model would be `0009-0009-9817-7042-random_forest-0.1`. This PID can be used to reference the model in the Patra Knowledge Base.
 
 ### [Optional] TAPIS Authentication
 
