@@ -12,9 +12,8 @@ import pkg_resources
 import requests
 
 from .exceptions import PatraIDGenerationError
-from .fairlearn_bias import BiasAnalyzer
 from .model_store import get_model_store, ensure_package_installed
-from .shap_xai import ExplainabilityAnalyser
+# BiasAnalyzer and ExplainabilityAnalyser are imported lazily when needed
 
 SCHEMA_JSON = os.path.join(os.path.dirname(__file__), 'schema', 'schema.json')
 logging.basicConfig(level=logging.INFO)
