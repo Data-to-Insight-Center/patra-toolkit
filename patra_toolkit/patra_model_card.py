@@ -260,6 +260,14 @@ class ModelCard:
             sensitive_feature_data (list): Values for the sensitive feature.
             model (object): The model being analyzed.
         """
+        # Lazy import of fairlearn
+        try:
+            from .fairlearn_bias import BiasAnalyzer
+        except ImportError:
+            raise ImportError(
+                "Fairlearn is not installed. Install it with: pip install patra-toolkit[fairness]"
+            )
+        
         bias_analyzer = BiasAnalyzer(dataset, true_labels, predicted_labels, sensitive_feature_name,
                                      sensitive_feature_data, model)
         self.bias_analysis = bias_analyzer.calculate_bias_metrics()
@@ -278,6 +286,14 @@ class ModelCard:
             model (object): The model being explained.
             n_features (int): Number of features to analyze. Default is 10.
         """
+        # Lazy import of shap
+        try:
+            from .shap_xai import ExplainabilityAnalyser
+        except ImportError:
+            raise ImportError(
+                "SHAP is not installed. Install it with: pip install patra-toolkit[xai]"
+            )
+        
         xai_analyzer = ExplainabilityAnalyser(train_dataset, column_names, model)
         self.xai_analysis = xai_analyzer.calculate_xai_features(n_features)
 
