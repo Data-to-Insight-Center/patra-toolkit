@@ -1,3 +1,5 @@
 from .patra_model_card import *
-from .fairlearn_bias import *
-from .shap_xai import *
+
+# Optional imports - these will be imported only when needed
+# from .fairlearn_bias import *  # Imported lazily in populate_bias()
+# from .shap_xai import *        # Imported lazily in populate_xai()
