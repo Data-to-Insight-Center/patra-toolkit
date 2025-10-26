@@ -8,8 +8,18 @@ from typing import List, Optional, Dict
 from urllib.parse import urlparse, urlunparse
 
 import jsonschema
-import pkg_resources
 import requests
+
+# Use importlib.metadata for Python 3.8+ compatibility, fallback to pkg_resources for older versions
+try:
+    from importlib.metadata import distributions
+    _HAS_IMPORTLIB_METADATA = True
+except ImportError:
+    try:
+        import pkg_resources
+        _HAS_IMPORTLIB_METADATA = False
+    except ImportError:
+        raise ImportError("Neither importlib.metadata nor pkg_resources is available")
 
 from .exceptions import PatraIDGenerationError
 from .model_store import get_model_store, ensure_package_installed
@@ -301,8 +311,16 @@ class ModelCard:
         Gathers package requirements for the model card, excluding certain dependencies.
         """
         exclude_packages = {"shap", "fairlearn"}
-        installed_packages = pkg_resources.working_set
-        packages_list = sorted([f"{pkg.key}=={pkg.version}" for pkg in installed_packages])
+        
+        if _HAS_IMPORTLIB_METADATA:
+            # Use importlib.metadata for Python 3.8+
+            installed_packages = distributions()
+            packages_list = sorted([f"{pkg.metadata['Name']}=={pkg.version}" for pkg in installed_packages if pkg.metadata['Name']])
+        else:
+            # Fallback to pkg_resources for older Python versions
+            installed_packages = pkg_resources.working_set
+            packages_list = sorted([f"{pkg.key}=={pkg.version}" for pkg in installed_packages])
+        
         self.model_requirements = [
             pkg for pkg in packages_list
             if pkg.split("==")[0] not in exclude_packages
